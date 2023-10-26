@@ -289,6 +289,7 @@ export const networks = {
             account: 'https://cexplorer.io/address/',
             token: 'https://cexplorer.io/asset/',
             queryString: '',
+            address: 'https://explorer.blockfrost.dev/account/',
         },
         support: {
             [DeviceModelInternal.T2T1]: '2.4.3',
@@ -516,6 +517,7 @@ export const networks = {
             account: 'https://preview.cexplorer.io/address/',
             token: 'https://preview.cexplorer.io/asset/',
             queryString: '',
+            address: 'https://testnet-explorer.blockfrost.dev/account/',
         },
         support: {
             [DeviceModelInternal.T2T1]: '2.4.3',
