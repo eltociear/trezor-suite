@@ -625,6 +625,10 @@ const onCall = async (message: IFrameCallMessage) => {
             createUiMessage(UI.REQUEST_PASSPHRASE_ON_DEVICE, { device: device.toMessageObject() }),
         );
     });
+    device.on(DEVICE.THP_PAIRING, onThpPairingHandler);
+    device.on(DEVICE.TRANSPORT_STATE_CHANGED, () => {
+        postMessage(createDeviceMessage(DEVICE.TRANSPORT_STATE_CHANGED, device.toMessageObject()));
+    });
     device.on(DEVICE.SAVE_STATE, (state: string) => {
         // Persist internal state only in case of core in popup
         // Currently also only for webextension until we asses security implications
@@ -787,6 +791,7 @@ const onDeviceButtonHandler = async (
             : undefined;
     // interaction timeout
     interactionTimeout();
+    console.warn('Requesting the UI!!!!!');
     // request view
     postMessage(
         createDeviceMessage(DEVICE.BUTTON, { ...request, device: device.toMessageObject() }),
@@ -870,6 +875,23 @@ const onDevicePassphraseHandler: DeviceEvents['passphrase'] = async (...[device,
 const onEmptyPassphraseHandler: DeviceEvents['passphrase'] = (...[_, callback]) => {
     // send as PassphrasePromptResponse
     callback({ passphrase: '' });
+};
+
+const onThpPairingHandler: DeviceEvents['thp_pairing'] = async (...[device, callback]) => {
+    // wait for popup handshake
+    await waitForPopup();
+    // create ui promise
+    const uiPromise = uiPromises.create(UI.RECEIVE_THP_PAIRING_TAG, device);
+    postMessage(createUiMessage(UI.REQUEST_THP_PAIRING, { device: device.toMessageObject() }));
+    // wait for response
+    try {
+        const uiResp = await uiPromise.promise;
+        console.warn('RECEIVED THP TAG', uiResp);
+        callback(null, uiResp);
+    } catch (e) {
+        console.warn('RECEIVED THP TAG error', e);
+        callback(e, null);
+    }
 };
 
 /**
@@ -977,6 +999,10 @@ const createDeviceList = (params: ConstructorParameters<typeof DeviceList>[0]) =
         postMessage(createTransportMessage(TRANSPORT.START, transportType)),
     );
 
+    deviceList.on(DEVICE.TRANSPORT_STATE_CHANGED, device => {
+        postMessage(createDeviceMessage(DEVICE.TRANSPORT_STATE_CHANGED, device));
+    });
+
     deviceList.on(TRANSPORT.ERROR, error => {
         _log.warn('TRANSPORT.ERROR', error);
         postMessage(createTransportMessage(TRANSPORT.ERROR, { error }));
@@ -1031,6 +1057,7 @@ export class Core extends EventEmitter {
             case UI.RECEIVE_PIN:
             case UI.RECEIVE_PASSPHRASE:
             case UI.INVALID_PASSPHRASE_ACTION:
+            case UI.RECEIVE_THP_PAIRING_TAG:
             case UI.RECEIVE_ACCOUNT:
             case UI.RECEIVE_FEE:
             case UI.RECEIVE_WORD:

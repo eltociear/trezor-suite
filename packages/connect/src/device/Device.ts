@@ -1,8 +1,16 @@
 // original file https://github.com/trezor/connect/blob/develop/src/js/device/Device.js
 import { versionUtils, createDeferred, Deferred, TypedEmitter } from '@trezor/utils';
 import { Session } from '@trezor/transport';
-import { TransportProtocol, v1 as v1Protocol, bridge as bridgeProtocol } from '@trezor/protocol';
+import {
+    TransportProtocol,
+    TransportProtocolState,
+    // v1 as v1Protocol,
+    v2 as v2Protocol,
+    thp as protocolThp,
+    // bridge as bridgeProtocol,
+} from '@trezor/protocol';
 import { DeviceCommands, PassphrasePromptResponse } from './DeviceCommands';
+import { createThpChannel, initThpChannel, getThpSession } from './thpCommands';
 import { PROTO, ERRORS, NETWORK } from '../constants';
 import { DEVICE, DeviceButtonRequestPayload, UI } from '../events';
 import { getAllNetworks } from '../data/coinInfo';
@@ -80,7 +88,26 @@ export interface DeviceEvents {
     [DEVICE.BUTTON]: (device: Device, payload: DeviceButtonRequestPayload) => void;
     [DEVICE.ACQUIRED]: () => void;
     [DEVICE.SAVE_STATE]: (state: string) => void;
+    [DEVICE.THP_PAIRING]: (device: Device, callback: (err: any, result: any) => void) => void;
+    [DEVICE.TRANSPORT_STATE_CHANGED]: () => void;
 }
+
+// type WalletSession = {
+//     internal: string | number; // string for devices without THP (from Initialize), number for devices with THP (from ThpCreateNewSession)
+//     external: string; // 1st testnet address
+// };
+
+type TransportState = TransportProtocolState & {
+    // protocol: TransportProtocol;
+    // // sessions: Record<number, string>; // { [key: new_session_id from ThpCreateNewSession]: value: 1rs address? }
+    // sessions: WalletSession[]; // { [key: new_session_id from ThpCreateNewSession]: value: 1rs address? }
+};
+
+// type DeviceTransport = {
+//     instance: Transport;
+//     descriptor: Descriptor;
+//     state: TransportState;
+// };
 
 /**
  * @export
@@ -90,6 +117,7 @@ export interface DeviceEvents {
 export class Device extends TypedEmitter<DeviceEvents> {
     transport: Transport;
     protocol: TransportProtocol;
+    transportState: TransportState;
 
     originalDescriptor: Descriptor;
 
@@ -107,6 +135,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
 
     // @ts-expect-error: strictPropertyInitialization
     features: Features;
+    properties?: protocolThp.ThpDeviceProperties;
 
     featuresNeedsReload = false;
 
@@ -129,7 +158,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
 
     instance = 0;
 
-    internalState: string[] = [];
+    internalState: string[] = []; // THP channel
 
     externalState: string[] = [];
 
@@ -149,10 +178,11 @@ export class Device extends TypedEmitter<DeviceEvents> {
         super();
 
         if (transport.name === 'BridgeTransport') {
-            this.protocol = bridgeProtocol;
+            this.protocol = v2Protocol;
         } else {
-            this.protocol = v1Protocol;
+            this.protocol = v2Protocol;
         }
+        this.transportState = new protocolThp.ThpProtocolState();
 
         // === immutable properties
         this.transport = transport;
@@ -340,6 +370,9 @@ export class Device extends TypedEmitter<DeviceEvents> {
             try {
                 if (fn) {
                     await this.initialize(!!options.useCardanoDerivation);
+                } else if (!this.useLegacyProtocol()) {
+                    console.warn('..._runInner');
+                    await createThpChannel(this);
                 } else {
                     const getFeaturesTimeout =
                         DataManager.getSettings('env') === 'react-native'
@@ -498,7 +531,8 @@ export class Device extends TypedEmitter<DeviceEvents> {
         }
 
         const expectedState = this.getExternalState();
-        const state = await this.getCommands().getDeviceState();
+        // const state = await this.getCommands().getDeviceState();
+        const state = await getThpSession(this);
         const uniqueState = `${state}@${this.features.device_id || 'device_id'}:${this.instance}`;
         if (this.features.session_id) {
             this.setInternalState(this.features.session_id);
@@ -511,24 +545,28 @@ export class Device extends TypedEmitter<DeviceEvents> {
         }
     }
 
-    async initialize(useCardanoDerivation: boolean) {
-        let payload: PROTO.Initialize | undefined;
-        if (this.features) {
-            const internalState = this.getInternalState();
-            payload = {};
-            // If the user has BIP-39 seed, and Initialize(derive_cardano=True) is not sent,
-            // all Cardano calls will fail because the root secret will not be available.
-            payload.derive_cardano = useCardanoDerivation;
-            if (internalState) {
-                payload.session_id = internalState;
-            }
-        }
+    // bridge older than 3.0.0 adds MESSAGE_MAGIC_HEADER_BYTE to each chunk
+    // therefore it's not possible to implement Trezor Host Protocol
+    useLegacyProtocol() {
+        return (
+            this.transport.name === 'BridgeTransport' &&
+            !versionUtils.isNewerOrEqual(this.transport.version, '3.0.0')
+        );
+    }
 
-        const { message } = await this.getCommands().typedCall('Initialize', 'Features', payload);
+    async initialize(useCardanoDerivation: boolean) {
+        console.warn('.......Initialize()', useCardanoDerivation);
+        await initThpChannel(this, {}); // TODO settings
+
+        // const { message } = await this.getCommands().typedCall('Initialize', 'Features', payload);
+        const { message } = await this.getCommands().typedCall('GetFeatures', 'Features', {});
         this._updateFeatures(message);
     }
 
     async getFeatures() {
+        console.warn('.......getFeatures()');
+        await initThpChannel(this, {}); // TODO settings
+
         const { message } = await this.getCommands().typedCall('GetFeatures', 'Features', {});
         this._updateFeatures(message);
 
@@ -830,6 +868,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 path: this.originalDescriptor.path,
                 label: 'Unacquired device',
                 name: this.name,
+                properties: this.properties,
             };
         }
         const defaultLabel = 'My Trezor';
@@ -852,6 +891,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             firmwareRelease: this.firmwareRelease,
             firmwareType: this.firmwareType,
             features: this.features,
+            properties: this.properties,
             unavailableCapabilities: this.unavailableCapabilities,
             availableTranslations: this.availableTranslations,
         };

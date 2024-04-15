@@ -324,6 +324,7 @@ export class DeviceCommands {
             name: type,
             data: msg,
             protocol: this.device.protocol,
+            protocolState: this.device.transportState,
         });
 
         const res = await this.callPromise.promise;
@@ -375,6 +376,7 @@ export class DeviceCommands {
             await this.transport.receive({
                 session: this.sessionId,
                 protocol: this.device.protocol,
+                protocolState: this.device.transportState,
             }).promise;
             // throw error anyway, next call should be resolved properly
             throw error;
@@ -668,10 +670,11 @@ export class DeviceCommands {
             }
         } else {
             await this.transport.send({
-                protocol: this.device.protocol,
                 session: this.sessionId,
                 name: 'Cancel',
                 data: {},
+                protocol: this.device.protocol,
+                protocolState: this.device.transportState,
             }).promise;
 
             if (this.callPromise) {

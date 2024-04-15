@@ -1,3 +1,4 @@
+import type { ThpDeviceProperties } from '@trezor/protocol';
 import type { PROTO } from '../constants';
 import type { ReleaseInfo } from './firmware';
 
@@ -49,6 +50,7 @@ export type KnownDevice = {
     mode: DeviceMode;
     state?: string;
     features: PROTO.Features;
+    properties?: ThpDeviceProperties;
     unavailableCapabilities: UnavailableCapabilities;
     availableTranslations: string[];
 };
@@ -60,6 +62,7 @@ export type UnknownDevice = {
     label: string;
     error?: typeof undefined;
     features?: typeof undefined;
+    properties?: ThpDeviceProperties;
     firmware?: typeof undefined;
     firmwareRelease?: typeof undefined;
     firmwareType?: typeof undefined;
@@ -79,6 +82,7 @@ export type UnreadableDevice = {
     label: string;
     error: string;
     features?: typeof undefined;
+    properties?: typeof undefined;
     firmware?: typeof undefined;
     firmwareRelease?: typeof undefined;
     firmwareType?: typeof undefined;

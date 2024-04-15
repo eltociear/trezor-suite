@@ -9,6 +9,18 @@ export interface Manifest {
 
 export type Proxy = BlockchainSettings['proxy'];
 
+export type ThpSettings = {
+    hostName?: string;
+    rememberedDevices?: RememberedDevice[];
+    pairingMethods?: any[]; // ThpDeviceProperties
+};
+
+export type RememberedDevice = {
+    model: any; // TODO: other unique identifier from ThpDeviceProperties
+    staticKey: string;
+    credentials: any[]; //
+};
+
 export interface ConnectSettingsPublic {
     manifest?: Manifest;
     connectSrc?: string;
@@ -26,6 +38,7 @@ export interface ConnectSettingsPublic {
     coreMode?: 'auto' | 'popup' | 'iframe';
     /* _extendWebextensionLifetime features makes the service worker in @trezor/connect-webextension stay alive longer */
     _extendWebextensionLifetime?: boolean;
+    thpSettings?: ThpSettings;
 }
 
 // internal part, not to be accepted from .init()
