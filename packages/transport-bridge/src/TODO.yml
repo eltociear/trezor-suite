@@ -1,0 +1,10 @@
+- Trezor response: suita ma ulozeny channel X ale trezor ho nezna (channel override || device restart)
+- Trezor response: suita ma ulozeny ctrl byte X ale trezor ho nezna (nebo je nevalidni)
+
+- Per model nebo per FW? -> per model
+
+
+-> ThpChannelAllocation -> ThpChannelAllocationResponse
+-> Message -> ThpReadAck (from trezor) - MessageResponse (from trezor) -> ThpReadAck (from host)
+-> 0GetFeatures -> 0ThpReadAck (from trezor) - 0Fatures (from trezor) -> 0ThpReadAck (from host)
+-> 1GetFeatures -> 1ThpReadAck (from trezor) - 1Fatures (from trezor) -> 1ThpReadAck (from host)

@@ -240,6 +240,7 @@ export class TrezordNode {
                     const signal = this.createAbortSignal(res);
                     this.core
                         .call({
+                            url: req.url,
                             session: req.params.session as Session,
                             // @ts-expect-error
                             data: req.body,
@@ -261,7 +262,7 @@ export class TrezordNode {
                 (req, res) => {
                     const signal = this.createAbortSignal(res);
                     this.core
-                        .receive({ session: req.params.session as Session, signal })
+                        .receive({ url: req.url, session: req.params.session as Session, signal })
                         .then(result => {
                             if (!result.success) {
                                 res.statusCode = 400;
@@ -280,6 +281,7 @@ export class TrezordNode {
                     const signal = this.createAbortSignal(res);
                     this.core
                         .send({
+                            url: req.url,
                             session: req.params.session as Session,
                             // @ts-expect-error
                             data: req.body,
