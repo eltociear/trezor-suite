@@ -1,5 +1,10 @@
 import { versionUtils, createDeferred, Deferred, createTimeoutPromise } from '@trezor/utils';
-import { PROTOCOL_MALFORMED, bridge as bridgeProtocol } from '@trezor/protocol';
+import {
+    PROTOCOL_MALFORMED,
+    bridge as bridgeProtocol,
+    TransportProtocol,
+    TransportProtocolState,
+} from '@trezor/protocol';
 import { bridgeApiCall } from '../utils/bridgeApiCall';
 import * as bridgeApiResult from '../utils/bridgeApiResult';
 import { buildMessage } from '../utils/send';
@@ -59,6 +64,7 @@ export class BridgeTransport extends AbstractTransport {
      * information about  the latest version of trezord.
      */
     private latestVersion?: string;
+    private legacyBridge: boolean = false;
     /**
      * url of trezord server.
      */
@@ -96,6 +102,7 @@ export class BridgeTransport extends AbstractTransport {
             }
 
             this.stopped = false;
+            this.legacyBridge = versionUtils.isNewerOrEqual(this.version, '3.0.0');
 
             return this.success(undefined);
         });
@@ -232,12 +239,53 @@ export class BridgeTransport extends AbstractTransport {
         return Promise.resolve(this.success(undefined));
     }
 
+    private getQueryParams(session: string, protocol?: TransportProtocol) {
+        if (protocol?.name === 'v2' && this.legacyBridge) {
+            return `${session}?protocol=v2`;
+        }
+
+        return session;
+    }
+
+    private getRequestBody(
+        body: Buffer,
+        protocol?: TransportProtocol,
+        protocolState?: TransportProtocolState,
+    ) {
+        if (this.legacyBridge && protocol?.name === 'v2') {
+            // TODO: try catch + better condition?
+            return JSON.stringify({
+                state: protocolState?.serialize(),
+                body: body.toString('hex'),
+            });
+        }
+
+        return body.toString('hex');
+    }
+
+    private getResponseBody(
+        response: string,
+        protocol?: TransportProtocol,
+        protocolState?: TransportProtocolState,
+    ) {
+        if (this.legacyBridge && protocol?.name === 'v2') {
+            // TODO: try catch + better condition?
+            const { body, state } = JSON.parse(response);
+            protocolState?.deserialize(state);
+
+            return body;
+        }
+
+        return response;
+    }
+
     // https://github.dev/trezor/trezord-go/blob/f559ee5079679aeb5f897c65318d3310f78223ca/core/core.go#L534
     public call({
         session,
         name,
         data,
         protocol: customProtocol,
+        protocolState,
     }: AbstractTransportMethodParams<'call'>) {
         return this.scheduleAction(
             async signal => {
@@ -246,21 +294,33 @@ export class BridgeTransport extends AbstractTransport {
                     messages: this.messages,
                     name,
                     data,
-                    encode: protocol.encode,
+                    protocol,
+                    protocolState,
                 });
+                console.warn('---call bytes', protocolState, bytes);
+
                 const response = await this.post(`/call`, {
-                    params: session,
-                    body: bytes.toString('hex'),
+                    params: this.getQueryParams(session, protocol),
+                    body: this.getRequestBody(bytes, protocol, protocolState),
                     signal,
                 });
+
+                console.warn('---post bytes', response);
                 if (!response.success) {
                     return response;
                 }
+
+                const payload = this.getResponseBody(response.payload, protocol, protocolState);
                 const message = await receiveAndParse(
                     this.messages,
-                    () => Promise.resolve(Buffer.from(response.payload, 'hex')),
+                    () => Promise.resolve(Buffer.from(payload, 'hex')),
                     protocol,
                 );
+
+                if (protocolState?.shouldUpdateNonce(name)) {
+                    protocolState?.updateNonce('send');
+                    protocolState?.updateNonce('recv');
+                }
 
                 return this.success(message);
             },
@@ -268,18 +328,25 @@ export class BridgeTransport extends AbstractTransport {
         );
     }
 
-    public send({ session, name, data, protocol }: AbstractTransportMethodParams<'send'>) {
+    public send({
+        session,
+        name,
+        data,
+        protocol: customProtocol,
+        protocolState,
+    }: AbstractTransportMethodParams<'send'>) {
         return this.scheduleAction(async signal => {
-            const { encode } = protocol || bridgeProtocol;
+            const protocol = customProtocol || bridgeProtocol;
             const bytes = buildMessage({
                 messages: this.messages,
                 name,
                 data,
-                encode,
+                protocol,
+                protocolState,
             });
             const response = await this.post('/post', {
-                params: session,
-                body: bytes.toString('hex'),
+                params: this.getQueryParams(session, protocol),
+                body: this.getRequestBody(bytes, protocol, protocolState),
                 signal,
             });
             if (!response.success) {
@@ -295,15 +362,15 @@ export class BridgeTransport extends AbstractTransport {
         protocol: customProtocol,
     }: AbstractTransportMethodParams<'receive'>) {
         return this.scheduleAction(async signal => {
+            const protocol = customProtocol || bridgeProtocol;
             const response = await this.post('/read', {
-                params: session,
+                params: this.getQueryParams(session, protocol),
                 signal,
             });
 
             if (!response.success) {
                 return response;
             }
-            const protocol = customProtocol || bridgeProtocol;
             const message = await receiveAndParse(
                 this.messages,
                 () => Promise.resolve(Buffer.from(response.payload, 'hex')),

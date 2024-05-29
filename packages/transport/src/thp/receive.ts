@@ -7,22 +7,18 @@ import { TransportProtocolState, thp as protocolThp, v2 as v2Protocol } from '@t
 import { receive } from '../utils/receive';
 import { AsyncResultWithTypedError } from '../types';
 
-type SendThpMessageProps = {
-    protocolState?: TransportProtocolState;
-    chunks: Buffer[];
+export type ReceiveThpMessageProps = {
+    messages: Root;
     apiWrite: (chunk: Buffer, signal?: AbortSignal) => AsyncResultWithTypedError<any, any>;
     apiRead: (signal?: AbortSignal) => AsyncResultWithTypedError<any, any>;
+    protocolState?: TransportProtocolState;
     signal?: AbortSignal;
-};
-
-type ReceiveThpMessageProps = Omit<SendThpMessageProps, 'chunks'> & {
-    messages: Root;
 };
 
 // Filter transport Api.read results and ignore unexpected messages
 // retry indefinitely until aborted
 export const readWithExpectedState = async (
-    apiRead: SendThpMessageProps['apiRead'],
+    apiRead: ReceiveThpMessageProps['apiRead'],
     protocolState?: TransportProtocolState,
     signal?: AbortSignal,
 ): Promise<any> => {

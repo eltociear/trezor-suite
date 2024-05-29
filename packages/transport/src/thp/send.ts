@@ -1,18 +1,13 @@
 // send with ThpAck
 
-import { TransportProtocolState, thp as protocolThp } from '@trezor/protocol';
+import { thp as protocolThp } from '@trezor/protocol';
 import { scheduleAction } from '@trezor/utils';
 
 import { sendChunks } from '../utils/send';
-import { readWithExpectedState } from './receive';
-import { AsyncResultWithTypedError } from '../types';
+import { readWithExpectedState, ReceiveThpMessageProps } from './receive';
 
-type SendThpMessageProps = {
-    protocolState?: TransportProtocolState;
+type SendThpMessageProps = Omit<ReceiveThpMessageProps, 'messages'> & {
     chunks: Buffer[];
-    apiWrite: (chunk: Buffer, signal?: AbortSignal) => AsyncResultWithTypedError<any, any>;
-    apiRead: (signal?: AbortSignal) => AsyncResultWithTypedError<any, any>;
-    signal?: AbortSignal;
 };
 
 export const sendThpMessage = async ({
@@ -63,7 +58,6 @@ export const sendThpMessage = async ({
                         }
                         console.warn('sendThpMessage retransmission');
                     },
-                    // attempts: [{ timeout: 1000 }],
                 },
             );
 
@@ -72,14 +66,6 @@ export const sendThpMessage = async ({
             return result;
         } catch (error) {
             console.warn('sendWithRetransmission error', tries, error);
-            // if (error.message === 'Aborted by timeout') {
-            //     if (tries > 2) {
-            //         throw new Error('Retransmission attempts limit reached');
-            //     }
-            //     tries++;
-
-            //     return attempt();
-            // }
             throw error;
         }
     };
