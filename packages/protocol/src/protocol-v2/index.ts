@@ -1,3 +1,3 @@
 export * from './decode';
 export * from './encode';
-export const name = 'bridge';
+export const name = 'v2';
