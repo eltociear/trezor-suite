@@ -52,7 +52,6 @@ interface CustomFeeProps<TFieldValues extends FormState> {
     control: Control;
     setValue: UseFormSetValue<TFieldValues>;
     getValues: UseFormGetValues<TFieldValues>;
-    changeFeeLimit?: (value: string) => void;
     composedFeePerByte: string;
 }
 
@@ -61,7 +60,6 @@ export const CustomFee = <TFieldValues extends FormState>({
     feeInfo,
     register,
     control,
-    changeFeeLimit,
     composedFeePerByte,
     ...props
 }: CustomFeeProps<TFieldValues>) => {
@@ -173,7 +171,6 @@ export const CustomFee = <TFieldValues extends FormState>({
                         inputState={getInputState(feeLimitError)}
                         name={FEE_LIMIT}
                         data-test={FEE_LIMIT}
-                        onChange={changeFeeLimit}
                         rules={feeLimitRules}
                     />
                 ) : (

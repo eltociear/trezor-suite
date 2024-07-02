@@ -8,10 +8,6 @@ import {
     saveSendFormDraftThunk,
     signAndPushSendFormTransactionThunk,
 } from 'src/actions/wallet/send/sendFormThunks';
-import {
-    getLastUsedFeeLevel,
-    setLastUsedFeeLevel,
-} from 'src/actions/settings/walletSettingsActions';
 import { goto } from 'src/actions/suite/routerActions';
 import { fillSendForm } from 'src/actions/suite/protocolActions';
 import { AppState } from 'src/types/suite';
@@ -125,25 +121,12 @@ export const useSendForm = (props: UseSendFormProps): SendContextValues => {
     // used in "loadDraft" useEffect and "importTransaction" callback
     const getLoadedValues = useCallback(
         (loadedState?: Partial<FormState>) => {
-            const feeEnhancement: Partial<FormState> = {};
-            if (!loadedState || !loadedState.selectedFee) {
-                const lastUsedFee = dispatch(getLastUsedFeeLevel());
-                if (lastUsedFee) {
-                    feeEnhancement.selectedFee = lastUsedFee.label;
-                    if (lastUsedFee.label === 'custom') {
-                        feeEnhancement.feePerUnit = lastUsedFee.feePerUnit;
-                        feeEnhancement.feeLimit = lastUsedFee.feeLimit;
-                    }
-                }
-            }
-
             return {
                 ...getDefaultValues(localCurrencyOption, state.network),
                 ...loadedState,
-                ...feeEnhancement,
             };
         },
-        [dispatch, localCurrencyOption, state.network],
+        [localCurrencyOption, state.network],
     );
 
     // update custom values
@@ -223,7 +206,6 @@ export const useSendForm = (props: UseSendFormProps): SendContextValues => {
     const resetContext = useCallback(() => {
         setComposedLevels(undefined);
         dispatch(removeSendFormDraftThunk()); // reset draft;
-        dispatch(setLastUsedFeeLevel()); // reset last known FeeLevel
         setState(getStateFromProps(props)); // resetting state will trigger "loadDraft" useEffect block, which will reset FormState to default
     }, [dispatch, props, setComposedLevels]);
 
@@ -359,7 +341,14 @@ export const useSendForm = (props: UseSendFormProps): SendContextValues => {
     useEffect(() => {
         if (!draftSaveRequest) return;
         if (Object.keys(formState.errors).length === 0) {
-            dispatch(saveSendFormDraftThunk({ formState: getValues() }));
+            dispatch(
+                saveSendFormDraftThunk({
+                    formState: {
+                        ...getValues(),
+                        selectedFee: undefined,
+                    },
+                }),
+            );
         }
         setDraftSaveRequest(false);
     }, [dispatch, draftSaveRequest, setDraftSaveRequest, getValues, formState.errors]);
