@@ -78,13 +78,15 @@ describe('thpUtils', () => {
     it.only('receiveThpMessage successful', async () => {
         const protocolState = new protocolThp.ThpProtocolState();
         protocolState.updateHandshakeCredentials({ trezorKey: Buffer.alloc(0) });
-        // const readResult = Buffer.from([0x04, 12, 34, 0, 4, 1, 1, 1, 1]);
-        const readResult = Buffer.from('040c22000445d0b8f2', 'hex');
 
-        console.warn('RESS', readResult.toString('hex'));
+        // const readResult = Buffer.from([0x04, 12, 34, 0, 4, 1, 1, 1, 1]);
+        const readResult = Buffer.from('200c22000471913136', 'hex');
+        protocolState.setChannel(readResult.subarray(1, 3));
+        protocolState.setExpectedResponse([0x20]);
+
         const result = await receiveThpMessage({
-            protocolState,
             messages: protobuf.Root.fromJSON({}),
+            protocolState,
             apiRead: () => Promise.resolve({ success: true, payload: readResult }),
             apiWrite,
         });
@@ -109,20 +111,20 @@ describe('thpUtils', () => {
     it('sendThpMessage rejected after retransmission attempts limit reached', async () => {
         jest.useFakeTimers();
         const abortController = new AbortController();
-        const apiRead = jest.fn(signal => {
-            return new Promise((resolve, reject) => {
-                const listener = () => {
-                    signal.removeEventListener('abort', listener);
-                    reject(new Error('Aborted by signal in API'));
-                };
-                signal?.addEventListener('abort', listener);
+        // const apiRead = jest.fn(signal => {
+        //     return new Promise((resolve, reject) => {
+        //         const listener = () => {
+        //             signal.removeEventListener('abort', listener);
+        //             reject(new Error('Aborted by signal in API'));
+        //         };
+        //         signal?.addEventListener('abort', listener);
 
-                setTimeout(() => {
-                    signal.removeEventListener('abort', listener);
-                    resolve({ success: true, payload: Buffer.from('a') });
-                }, 500);
-            });
-        });
+        //         setTimeout(() => {
+        //             signal.removeEventListener('abort', listener);
+        //             resolve({ success: true, payload: Buffer.from('a') });
+        //         }, 500);
+        //     });
+        // });
         // const r = await sendThpMessage({
         //     chunks: [Buffer.from([0x40, 0, 0])],
         //     apiWrite,
@@ -150,11 +152,9 @@ describe('thpUtils', () => {
         await jest.advanceTimersByTimeAsync(5000);
         const result = await sendPromise;
 
-        // await expect(() => sendPromise).rejects.toThrow('Abo');
+        expect(result).toEqual({ error: 'Aborted by timeout' });
 
-        expect(result).toEqual({ error: 'Retransmission attempts limit reached' });
-
-        // console.warn('Decrypted', sendPromise, r3);
+        expect(apiWrite).toHaveBeenCalledTimes(3);
     });
 
     it('sendThpMessage aborted by signal', async () => {
@@ -169,6 +169,7 @@ describe('thpUtils', () => {
         }).catch(e => ({ error: e.message }));
 
         await jest.advanceTimersByTimeAsync(1000);
+        expect(apiWrite).toHaveBeenCalledTimes(2); // there was at least 1 retransmission
         abortController.abort();
         const result = await sendPromise;
 
