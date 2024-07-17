@@ -1,6 +1,7 @@
 export type ScheduledAction<T> = (signal?: AbortSignal) => Promise<T>;
 
 type AttemptParams = {
+    attemptFailureHandler?: (error: Error) => Error | void; // break attemptLoop if `Error` is set
     timeout?: number; // How many ms wait for a single action attempt (default = indefinitely)
     gap?: number; // How many ms wait before the next attempt (default = none)
 };
@@ -124,7 +125,7 @@ export const scheduleAction = async <T>(
     const clear = clearAborter.signal;
     const getParams = isArray(attempts)
         ? (attempt: number) => attempts[attempt]
-        : () => ({ timeout, gap });
+        : () => ({ timeout, gap, attemptFailureHandler });
 
     try {
         return await Promise.race([
