@@ -524,12 +524,8 @@ const onCall = async (message: IFrameCallMessage) => {
     }
 
     if (!_deviceList.isConnected() && !_deviceList.pendingConnection()) {
-        const { transports, pendingTransportEvent } = DataManager.getSettings();
         // transport is missing try to initialize it once again
-        // TODO bridge transport is probably not reusable, so I can't remove this setTransports yet.
-        _deviceList.setTransports(transports);
-        // TODO is pendingTransportEvent needed here?
-        await _deviceList.init({ pendingTransportEvent });
+        await _deviceList.init();
     }
 
     if (method.isManagementRestricted()) {
