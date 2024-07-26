@@ -32,16 +32,15 @@ export const getBitcoinNetwork = (pathOrName: DerivationPath) => {
     return networks.find(n => n.slip44 === slip44);
 };
 
-export const getEthereumNetwork = (pathOrName: DerivationPath) => {
+export const getEthereumNetwork = (pathOrChain: DerivationPath) => {
     const networks = cloneObject(ethereumNetworks);
-    if (typeof pathOrName === 'string') {
-        const name = pathOrName.toLowerCase();
+    if (typeof pathOrChain === 'string') {
+        const chain = pathOrChain.toLowerCase();
 
-        return networks.find(
-            n => n.name.toLowerCase() === name || n.shortcut.toLowerCase() === name,
-        );
+        return networks.find(network => network.chain?.toLowerCase() === chain);
     }
-    const slip44 = fromHardened(pathOrName[1]);
+    const path = pathOrChain[1];
+    const slip44 = fromHardened(path);
 
     return networks.find(n => n.slip44 === slip44);
 };
@@ -262,6 +261,7 @@ const parseEthereumNetworksJson = (json: any) => {
             shortcut: network.shortcut,
             slip44: network.slip44,
             support: network.support,
+            chain: network.chain,
         });
     });
 };

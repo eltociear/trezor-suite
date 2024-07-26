@@ -71,7 +71,13 @@ const writeIdentityConnection = (
 };
 
 const connect = (draft: BlockchainState, info: BlockchainInfo) => {
-    const network = getNetwork(info.coin.shortcut.toLowerCase());
+    const shortcut = info.coin.shortcut.toLowerCase();
+    // Right now Blockbook reports shortcut as main currency of specific network
+    // However, in this case, BSC is network, BNB is native currency
+    // TODO: wait for new Blockbook param 'network'
+    const enhancedShortcut = shortcut === 'bnb' ? 'bsc' : shortcut;
+
+    const network = getNetwork(enhancedShortcut);
     if (!network) return;
 
     if (info.identity) {
