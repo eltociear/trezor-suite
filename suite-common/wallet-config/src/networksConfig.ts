@@ -602,7 +602,9 @@ export const getTestnets = (debug = false) =>
 export const getAllNetworkSymbols = () => networksCompatibility.map(n => n.symbol);
 
 export const getEthereumTypeNetworkSymbols = () =>
-    networksCompatibility.filter(n => n.networkType === 'ethereum').map(n => n.symbol);
+    Object.entries(networks)
+        .filter(([_, network]) => network.networkType === 'ethereum')
+        .map(([symbol, _]) => symbol);
 
 export const getTestnetSymbols = () => getTestnets().map(n => n.symbol);
 
