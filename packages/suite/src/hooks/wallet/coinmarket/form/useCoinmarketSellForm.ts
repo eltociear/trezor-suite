@@ -8,7 +8,6 @@ import {
     formatAmount,
     getNetwork,
 } from '@suite-common/wallet-utils';
-import { useDidUpdate } from '@trezor/react-utils';
 import { isChanged } from '@suite-common/suite-utils';
 import { useActions, useDispatch, useSelector, useTranslation } from 'src/hooks/suite';
 import invityAPI from 'src/services/suite/invityAPI';
@@ -17,7 +16,6 @@ import {
     addIdsToQuotes,
     filterQuotesAccordingTags,
     getUnusedAddressFromAccount,
-    coinmarketGetRoundedFiatAmount,
 } from 'src/utils/wallet/coinmarket/coinmarketUtils';
 import { createQuoteLink, getAmountLimits } from 'src/utils/wallet/coinmarket/sellUtils';
 import { useFormDraft } from 'src/hooks/wallet/useFormDraft';
@@ -58,6 +56,7 @@ import { useCoinmarketSellFormState } from 'src/hooks/wallet/coinmarket/form/use
 import { useCoinmarketSellFormHelpers } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormHelpers';
 import { selectAccounts } from '@suite-common/wallet-core';
 import { Network } from '@suite-common/wallet-config';
+import { useCoinmarketSatsSwitcher } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSatsSwitcher';
 
 export const useCoinmarketSellForm = ({
     selectedAccount,
@@ -221,6 +220,14 @@ export const useCoinmarketSellForm = ({
         innerQuotes,
         values?.paymentMethod?.value ?? '',
     );
+    const { toggleAmountInCrypto } = useCoinmarketSatsSwitcher({
+        account,
+        methods,
+        cryptoInputAmount: quotesByPaymentMethod?.[0]?.cryptoStringAmount,
+        fiatInputAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
+        network,
+        setIsSubmittingHelper,
+    });
 
     const getQuotesRequest = useCallback(
         async (request: SellFiatTradeQuoteRequest) => {
@@ -581,25 +588,6 @@ export const useCoinmarketSellForm = ({
         }
     };
 
-    const toggleAmountInCrypto = () => {
-        const { amountInCrypto } = getValues();
-        const bestScoredQuote = quotesByPaymentMethod?.[0];
-
-        if (!amountInCrypto) {
-            setValue('cryptoInput', bestScoredQuote?.cryptoStringAmount ?? '');
-        } else {
-            setValue(
-                'fiatInput',
-                bestScoredQuote?.fiatStringAmount
-                    ? coinmarketGetRoundedFiatAmount(bestScoredQuote?.fiatStringAmount)
-                    : '',
-            );
-        }
-
-        setValue('amountInCrypto', !amountInCrypto);
-        setIsSubmittingHelper(true); // remove delay of sending request
-    };
-
     // hooks
     useEffect(() => {
         dispatch(loadInvityData());
@@ -623,18 +611,6 @@ export const useCoinmarketSellForm = ({
         register('outputs');
         register('setMaxOutputId');
     }, [register]);
-
-    useDidUpdate(() => {
-        const cryptoInputValue = getValues(FORM_CRYPTO_INPUT);
-        if (!cryptoInputValue) {
-            return;
-        }
-        const conversion = shouldSendInSats ? amountToSatoshi : formatAmount;
-        setValue(FORM_CRYPTO_INPUT, conversion(cryptoInputValue, network.decimals), {
-            shouldValidate: true,
-            shouldDirty: true,
-        });
-    }, [shouldSendInSats]);
 
     useEffect(() => {
         const setStateAsync = async (initState: CoinmarketUseSellFormStateReturnProps) => {

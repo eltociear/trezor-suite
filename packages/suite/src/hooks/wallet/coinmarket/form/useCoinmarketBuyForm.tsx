@@ -3,8 +3,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import useDebounce from 'react-use/lib/useDebounce';
 import type { BuyTrade, BuyTradeQuoteRequest } from 'invity-api';
 import { isChanged } from '@suite-common/suite-utils';
-import { amountToSatoshi, formatAmount } from '@suite-common/wallet-utils';
-import { useDidUpdate } from '@trezor/react-utils';
+import { formatAmount } from '@suite-common/wallet-utils';
 import { useActions, useDispatch, useSelector } from 'src/hooks/suite';
 import { loadInvityData } from 'src/actions/wallet/coinmarket/coinmarketCommonActions';
 import invityAPI from 'src/services/suite/invityAPI';
@@ -14,7 +13,6 @@ import {
     getAmountLimits,
 } from 'src/utils/wallet/coinmarket/buyUtils';
 import { useFormDraft } from 'src/hooks/wallet/useFormDraft';
-import { CRYPTO_INPUT } from 'src/types/wallet/coinmarketSellForm';
 import { AmountLimits } from 'src/types/wallet/coinmarketCommonTypes';
 import { useCoinmarketBuyFormDefaultValues } from './useCoinmarketBuyFormDefaultValues';
 import { CoinmarketTradeBuyType, UseCoinmarketFormProps } from 'src/types/coinmarket/coinmarket';
@@ -41,6 +39,7 @@ import useCoinmarketPaymentMethod from 'src/hooks/wallet/coinmarket/form/useCoin
 import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
 import { useCoinmarketNavigation } from 'src/hooks/wallet/useCoinmarketNavigation';
 import { FORM_PAYMENT_METHOD_SELECT } from 'src/constants/wallet/coinmarket/form';
+import { useCoinmarketSatsSwitcher } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSatsSwitcher';
 
 const useCoinmarketBuyForm = ({
     selectedAccount,
@@ -131,7 +130,7 @@ const useCoinmarketBuyForm = ({
         mode: 'onChange',
         defaultValues: isDraft && draftUpdated ? draftUpdated : defaultValues,
     });
-    const { register, control, formState, reset, setValue, getValues, handleSubmit } = methods;
+    const { register, control, formState, reset, setValue, handleSubmit } = methods;
     const values = useWatch<CoinmarketBuyFormProps>({ control });
     const previousValues = useRef<typeof values | null>(offFirstRequest ? draftUpdated : null);
 
@@ -147,6 +146,14 @@ const useCoinmarketBuyForm = ({
         innerQuotes,
         values?.paymentMethod?.value ?? '',
     );
+    const { toggleAmountInCrypto } = useCoinmarketSatsSwitcher({
+        account,
+        methods,
+        cryptoInputAmount: quotesByPaymentMethod?.[0]?.receiveStringAmount,
+        fiatInputAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
+        network,
+        setIsSubmittingHelper,
+    });
 
     const getQuotesRequest = useCallback(
         async (request: BuyTradeQuoteRequest) => {
@@ -356,20 +363,6 @@ const useCoinmarketBuyForm = ({
         setCallInProgress(false);
     };
 
-    const toggleAmountInCrypto = () => {
-        const { amountInCrypto } = getValues();
-        const bestScoredQuote = quotesByPaymentMethod?.[0];
-
-        if (!amountInCrypto) {
-            setValue('cryptoInput', bestScoredQuote?.receiveStringAmount ?? '');
-        } else {
-            setValue('fiatInput', bestScoredQuote?.fiatStringAmount ?? '');
-        }
-
-        setValue('amountInCrypto', !amountInCrypto);
-        setIsSubmittingHelper(true); // remove delay of sending request
-    };
-
     // hooks
     useEffect(() => {
         dispatch(loadInvityData());
@@ -440,18 +433,6 @@ const useCoinmarketBuyForm = ({
 
         checkQuotesTimer(handleChange);
     });
-
-    useDidUpdate(() => {
-        const cryptoInputValue = getValues(CRYPTO_INPUT);
-        if (!cryptoInputValue) {
-            return;
-        }
-        const conversion = shouldSendInSats ? amountToSatoshi : formatAmount;
-        setValue(CRYPTO_INPUT, conversion(cryptoInputValue, network.decimals), {
-            shouldValidate: true,
-            shouldDirty: true,
-        });
-    }, [shouldSendInSats]);
 
     useDebounce(
         () => {
