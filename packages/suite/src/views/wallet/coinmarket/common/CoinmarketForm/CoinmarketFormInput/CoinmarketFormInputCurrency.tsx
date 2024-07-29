@@ -9,6 +9,7 @@ import { CoinmarketFormOption, CoinmarketFormOptionLabel } from 'src/views/walle
 import styled from 'styled-components';
 
 const SelectWrapper = styled(Select)`
+    /* stylelint-disable selector-class-pattern */
     .react-select__value-container {
         padding: 0;
     }

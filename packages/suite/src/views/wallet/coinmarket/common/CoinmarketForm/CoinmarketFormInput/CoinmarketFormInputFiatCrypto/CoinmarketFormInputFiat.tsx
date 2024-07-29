@@ -13,6 +13,7 @@ import styled from 'styled-components';
 const CoinmarketFormInputCurrencyWrapper = styled(CoinmarketFormInputCurrency)`
     width: 64px;
 
+    /* stylelint-disable selector-class-pattern */
     .react-select__indicators {
         position: absolute;
         top: 7px;

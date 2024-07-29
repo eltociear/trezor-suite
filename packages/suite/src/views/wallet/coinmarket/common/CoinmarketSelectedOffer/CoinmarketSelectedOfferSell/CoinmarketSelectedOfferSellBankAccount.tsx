@@ -86,6 +86,7 @@ const Row = styled.div`
     margin: ${spacingsPx.xxs} 0;
     display: flex;
 
+    /* stylelint-disable selector-class-pattern */
     .react-select__value-container {
         padding-right: ${spacingsPx.lg};
     }
