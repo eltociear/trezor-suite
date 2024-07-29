@@ -31,7 +31,7 @@ import { useCompose } from 'src/hooks/wallet/form/useCompose';
 import {
     CoinmarketSellFormContextProps,
     CoinmarketSellFormProps,
-    CoinmarketUseSellFormStateReturnProps,
+    CoinmarketUseCommonFormStateReturnProps,
 } from 'src/types/coinmarket/coinmarketForm';
 import { useCoinmarketSellFormDefaultValues } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormDefaultValues';
 import useCoinmarketPaymentMethod from 'src/hooks/wallet/coinmarket/form/useCoinmarketPaymentMethod';
@@ -52,7 +52,7 @@ import * as routerActions from 'src/actions/suite/routerActions';
 import * as coinmarketCommonActions from 'src/actions/wallet/coinmarket/coinmarketCommonActions';
 import * as coinmarketInfoActions from 'src/actions/wallet/coinmarketInfoActions';
 import { CoinmarketSellStepType } from 'src/types/coinmarket/coinmarketOffers';
-import { useCoinmarketSellFormState } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormState';
+import { useCoinmarketCommonFormState } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonFormState';
 import { useCoinmarketSellFormHelpers } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormHelpers';
 import { selectAccounts } from '@suite-common/wallet-core';
 import { Network } from '@suite-common/wallet-config';
@@ -128,9 +128,9 @@ export const useCoinmarketSellForm = ({
         trade => trade.tradeType === 'sell' && trade.key === transactionId,
     ) as TradeSell;
 
-    const [state, setState] = useState<CoinmarketUseSellFormStateReturnProps | undefined>(
-        undefined,
-    );
+    const [state, setState] = useState<
+        CoinmarketUseCommonFormStateReturnProps<CoinmarketSellFormProps> | undefined
+    >(undefined);
     const [amountLimits, setAmountLimits] = useState<AmountLimits | undefined>(undefined);
     const [sellStep, setSellStep] = useState<CoinmarketSellStepType>('BANK_ACCOUNT');
     const [innerQuotes, setInnerQuotes] = useState<SellFiatTrade[] | undefined>(
@@ -173,7 +173,7 @@ export const useCoinmarketSellForm = ({
     const values = useWatch<CoinmarketSellFormProps>({ control });
     const previousValues = useRef<typeof values | null>(offFirstRequest ? draftUpdated : null);
 
-    const initState = useCoinmarketSellFormState({
+    const initState = useCoinmarketCommonFormState({
         account,
         network,
         fees,
@@ -613,7 +613,9 @@ export const useCoinmarketSellForm = ({
     }, [register]);
 
     useEffect(() => {
-        const setStateAsync = async (initState: CoinmarketUseSellFormStateReturnProps) => {
+        const setStateAsync = async (
+            initState: CoinmarketUseCommonFormStateReturnProps<CoinmarketSellFormProps>,
+        ) => {
             const address = await getComposeAddressPlaceholder(
                 account,
                 network,

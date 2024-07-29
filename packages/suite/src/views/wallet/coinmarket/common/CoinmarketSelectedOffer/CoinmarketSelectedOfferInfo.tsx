@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { BuyTrade, BuyProviderInfo, SellFiatTrade } from 'invity-api';
+import { BuyTrade, SellFiatTrade } from 'invity-api';
 import { variables } from '@trezor/components';
 import {
     CoinmarketPaymentType,
@@ -18,6 +18,7 @@ import CoinmarketCoinImage from 'src/views/wallet/coinmarket/common/CoinmarketCo
 import { getCryptoQuoteAmountProps } from 'src/utils/wallet/coinmarket/coinmarketTypingUtils';
 import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
 import { coinmarketGetAmountLabels } from 'src/utils/wallet/coinmarket/coinmarketUtils';
+import { CoinmarketGetProvidersInfoProps } from 'src/types/coinmarket/coinmarket';
 
 const Wrapper = styled.div`
     display: flex;
@@ -114,14 +115,11 @@ const TransactionIdWrapper = styled.div`
 `;
 
 interface CoinmarketSelectedOfferInfoProps {
-    selectedQuote: BuyTrade | SellFiatTrade;
+    selectedQuote: BuyTrade | SellFiatTrade; // TODO: exchange
     transactionId?: string;
-    providers?: {
-        [name: string]: BuyProviderInfo;
-    };
+    providers: CoinmarketGetProvidersInfoProps;
 }
 
-// TODO: refactor with exchange redesign
 export const CoinmarketSelectedOfferInfo = ({
     selectedQuote,
     transactionId,

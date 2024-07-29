@@ -1703,6 +1703,42 @@ export default defineMessages({
         id: 'TR_COINMARKET_SELL',
         defaultMessage: 'Sell',
     },
+    TR_COINMARKET_RATE: {
+        id: 'TR_COINMARKET_RATE',
+        defaultMessage: 'Rate',
+    },
+    TR_COINMARKET_FIX_RATE: {
+        id: 'TR_COINMARKET_FIX_RATE',
+        defaultMessage: 'Fixed rate',
+    },
+    TR_COINMARKET_FLOATING_RATE: {
+        id: 'TR_COINMARKET_FLOATING_RATE',
+        defaultMessage: 'Floating rate',
+    },
+    TR_COINMARKET_FIX_RATE_DESCRIPTION: {
+        id: 'TR_COINMARKET_FIX_RATE_DESCRIPTION',
+        defaultMessage: 'Guarantee your rate for 15 minutes with a higher fee.',
+    },
+    TR_COINMARKET_FLOATING_RATE_DESCRIPTION: {
+        id: 'TR_COINMARKET_FLOATING_RATE_DESCRIPTION',
+        defaultMessage: 'Get an approximate rate subject to real-time market change.',
+    },
+    TR_COINMARKET_CEX_TOOLTIP: {
+        id: 'TR_COINMARKET_CEX_TOOLTIP',
+        defaultMessage: 'Centralized exchange',
+    },
+    TR_COINMARKET_DEX_TOOLTIP: {
+        id: 'TR_COINMARKET_DEX_TOOLTIP',
+        defaultMessage: 'Decentralized exchange',
+    },
+    TR_COINMARKET_NO_CEX_PROVIDER_FOUND: {
+        id: 'TR_COINMARKET_NO_CEX_PROVIDER_FOUND',
+        defaultMessage: 'No CEX provider found',
+    },
+    TR_COINMARKET_NO_DEX_PROVIDER_FOUND: {
+        id: 'TR_COINMARKET_NO_DEX_PROVIDER_FOUND',
+        defaultMessage: 'No DEX provider found',
+    },
     TR_ADDRESS_MODAL_CLIPBOARD: {
         defaultMessage: 'Copy address',
         id: 'TR_ADDRESS_MODAL_CLIPBOARD',

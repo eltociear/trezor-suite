@@ -4,12 +4,12 @@ import {
     cryptoToNetworkSymbol,
     isCryptoSymbolToken,
 } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
-import { Controller } from 'react-hook-form';
+import { Control, Controller } from 'react-hook-form';
 import { Select, useElevation } from '@trezor/components';
 import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
 import {
     CoinmarketAccountOptionsGroupOptionProps,
-    CoinmarketTradeSellType,
+    CoinmarketTradeSellExchangeType,
 } from 'src/types/coinmarket/coinmarket';
 import styled from 'styled-components';
 import { spacingsPx } from '@trezor/theme';
@@ -23,7 +23,10 @@ import {
     CoinmarketFormOptionNetwork,
 } from 'src/views/wallet/coinmarket';
 import CoinmarketFormInputLabel from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormInput/CoinmarketFormInputLabel';
-import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
+import {
+    CoinmarketFormInputDefaultProps,
+    CoinmarketSellExchangeFormProps,
+} from 'src/types/coinmarket/coinmarketForm';
 import { FORM_CRYPTO_CURRENCY_SELECT } from 'src/constants/wallet/coinmarket/form';
 import { useCoinmarketBuildAccountGroups } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormDefaultValues';
 import { coinmarketGetAccountLabel } from 'src/utils/wallet/coinmarket/coinmarketUtils';
@@ -38,12 +41,15 @@ const CoinmarketFormOptionIcon = styled(CoinmarketFormOptionTokenLogo)`
     margin-right: ${spacingsPx.xs};
 `;
 
-const CoinmarketFormInputAccountActive = ({ className, label }: CoinmarketFormInputProps) => {
+const CoinmarketFormInputAccountActive = ({
+    className,
+    label,
+}: CoinmarketFormInputDefaultProps) => {
     const {
         form: {
             helpers: { onCryptoCurrencyChange },
         },
-    } = useCoinmarketFormContext<CoinmarketTradeSellType>();
+    } = useCoinmarketFormContext<CoinmarketTradeSellExchangeType>();
     const { selectedAccount } = useSelector(state => state.wallet);
     const { shouldSendInSats } = useBitcoinAmountUnit(selectedAccount.account?.symbol);
     const { elevation } = useElevation();
@@ -55,7 +61,7 @@ const CoinmarketFormInputAccountActive = ({ className, label }: CoinmarketFormIn
             <CoinmarketFormInputLabel label={label} />
             <Controller
                 name={FORM_CRYPTO_CURRENCY_SELECT}
-                control={control}
+                control={control as Control<CoinmarketSellExchangeFormProps>}
                 render={({ field: { onChange, value } }) => (
                     <Select
                         value={value}
@@ -89,7 +95,7 @@ const CoinmarketFormInputAccountActive = ({ className, label }: CoinmarketFormIn
                                 </CoinmarketFormOption>
                             );
                         }}
-                        data-test="@coinmarket/form/account-select"
+                        data-test="@coinmarket/form/account-select-active"
                         isClearable={false}
                         isSearchable
                     />

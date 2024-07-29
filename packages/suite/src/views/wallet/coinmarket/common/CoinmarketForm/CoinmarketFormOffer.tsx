@@ -5,6 +5,7 @@ import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCo
 import {
     getCryptoQuoteAmountProps,
     getProvidersInfoProps,
+    getSelectQuoteTyped,
 } from 'src/utils/wallet/coinmarket/coinmarketTypingUtils';
 import { useState } from 'react';
 import { SCREEN_QUERY } from '@trezor/components/src/config/variables';
@@ -22,6 +23,8 @@ import {
     getBestRatedQuote,
 } from 'src/utils/wallet/coinmarket/coinmarketUtils';
 import CoinmarketFormOfferFiatAmount from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormOfferFiatAmount';
+// import { isCoinmarketExchangeOffers } from 'src/hooks/wallet/coinmarket/offers/useCoinmarketCommonOffers';
+// import CoinmarketFormOffersSwitcher from './CoinmarketFormOffersSwitcher';
 
 const CoinmarketFormOfferHeader = styled.div`
     display: flex;
@@ -69,10 +72,9 @@ const CoinmarketFormOffer = () => {
         quotes,
         goToOffers,
         getValues,
-        selectQuote,
         form: { state },
     } = context;
-    const { providers } = getProvidersInfoProps(context);
+    const providers = getProvidersInfoProps(context);
     const bestScoredQuote = quotes?.[0];
     const bestRatedQuote = getBestRatedQuote(quotes, type);
     const bestScoredQuoteAmounts = getCryptoQuoteAmountProps(bestScoredQuote, context);
@@ -87,6 +89,8 @@ const CoinmarketFormOffer = () => {
         !state.isLoadingOrInvalid && bestScoredQuoteAmounts?.sendAmount
             ? bestScoredQuoteAmounts.sendAmount
             : '0';
+
+    const selectQuote = getSelectQuoteTyped(context);
 
     return (
         <>
@@ -135,6 +139,22 @@ const CoinmarketFormOffer = () => {
                 providers={providers}
                 isBestRate={bestRatedQuote?.orderId === bestScoredQuote?.orderId}
             />
+            {/*
+            {isCoinmarketExchangeOffers(context) ? (
+                <CoinmarketFormOffersSwitcher
+                    isFormLoading={state.isFormLoading}
+                    isFormInvalid={state.isFormInvalid}
+                    providers={providers}
+                /
+            ) : (
+                <CoinmarketFormOfferItem
+                    bestQuote={bestScoredQuote}
+                    isFormLoading={state.isFormLoading}
+                    isFormInvalid={state.isFormInvalid}
+                    providers={providers}
+                    isBestRate={bestRatedQuote?.orderId === bestScoredQuote?.orderId}
+                />
+            )} */}
             <Button
                 onClick={() => {
                     if (bestScoredQuote) {

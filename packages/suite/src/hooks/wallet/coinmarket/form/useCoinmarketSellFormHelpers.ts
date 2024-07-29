@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'src/hooks/suite';
 import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
 import { CoinmarketAccountOptionsGroupOptionProps } from 'src/types/coinmarket/coinmarket';
 import {
-    CoinmarketFormHelpersProps,
+    CoinmarketSellFormHelpersProps,
     CoinmarketUseSellFormHelpersProps,
 } from 'src/types/coinmarket/coinmarketForm';
 import { Option } from 'src/types/wallet/coinmarketCommonTypes';
@@ -45,7 +45,7 @@ export const useCoinmarketSellFormHelpers = ({
     setAmountLimits,
     changeFeeLevel,
     composeRequest,
-}: CoinmarketUseSellFormHelpersProps): CoinmarketFormHelpersProps => {
+}: CoinmarketUseSellFormHelpersProps): CoinmarketSellFormHelpersProps => {
     const { symbol } = account;
     const { shouldSendInSats } = useBitcoinAmountUnit(symbol);
     const accounts = useSelector(selectAccounts);

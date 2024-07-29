@@ -11,15 +11,18 @@ import type {
 } from 'src/types/wallet/coinmarketCommonTypes';
 import {
     BuyCryptoPaymentMethod,
+    BuyProviderInfo,
     BuyTrade,
     BuyTradeStatus,
     CryptoSymbol,
     CryptoSymbolInfo,
+    ExchangeProviderInfo,
     ExchangeTrade,
     ExchangeTradeStatus,
     FiatCurrencyCode,
     SavingsTradeItemStatus,
     SellFiatTrade,
+    SellProviderInfo,
     SellTradeStatus,
     WatchBuyTradeResponse,
     WatchExchangeTradeResponse,
@@ -67,6 +70,7 @@ export type CoinmarketTradeType =
     | CoinmarketTradeSellType
     | CoinmarketTradeExchangeType;
 export type CoinmarketTradeBuySellType = Exclude<CoinmarketTradeType, CoinmarketTradeExchangeType>;
+export type CoinmarketTradeSellExchangeType = Exclude<CoinmarketTradeType, CoinmarketTradeBuyType>;
 
 export type CoinmarketTradeMapProps = {
     buy: TradeBuy;
@@ -226,4 +230,15 @@ export interface CoinmarketGetAmountLabelsReturnProps {
         ExtendedMessageDescriptor['id'],
         `TR_COINMARKET_YOU_WILL_${'PAY' | 'GET'}`
     >;
+}
+
+export type CoinmarketGetProvidersInfoProps =
+    | {
+          [name: string]: BuyProviderInfo | SellProviderInfo | ExchangeProviderInfo;
+      }
+    | undefined;
+
+export interface CoinmarketGetFiatCurrenciesProps {
+    supportedFiatCurrencies: Set<string> | undefined;
+    defaultAmountsOfFiatCurrencies?: Map<FiatCurrencyCode, string>;
 }

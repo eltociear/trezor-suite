@@ -6,7 +6,6 @@ import {
 } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
 import { Controller } from 'react-hook-form';
 import { Select, useElevation } from '@trezor/components';
-import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
 import {
     CoinmarketCryptoListProps,
     CoinmarketOptionsGroupProps,
@@ -30,8 +29,11 @@ import {
     CoinmarketFormOptionNetwork,
 } from 'src/views/wallet/coinmarket';
 import CoinmarketFormInputLabel from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormInput/CoinmarketFormInputLabel';
-import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
-import { FORM_CRYPTO_CURRENCY_SELECT } from 'src/constants/wallet/coinmarket/form';
+import {
+    CoinmarketBuyFormProps,
+    CoinmarketExchangeFormProps,
+    CoinmarketFormInputAccountProps,
+} from 'src/types/coinmarket/coinmarketForm';
 
 const CoinmarketFormOptionTokenLogo = styled(CoinmarketCoinImage)`
     height: 18px;
@@ -43,28 +45,35 @@ const CoinmarketFormOptionIcon = styled(CoinmarketFormOptionTokenLogo)`
     margin-right: ${spacingsPx.xs};
 `;
 
-const CoinmarketFormInputAccount = ({ className, label }: CoinmarketFormInputProps) => {
+const CoinmarketFormInputAccount = <
+    TFieldValues extends CoinmarketBuyFormProps | CoinmarketExchangeFormProps,
+>({
+    className,
+    label,
+    cryptoSelectName,
+    supportedCryptoCurrencies,
+    methods,
+}: CoinmarketFormInputAccountProps<TFieldValues>) => {
     const { selectedAccount } = useSelector(state => state.wallet);
     const { shouldSendInSats } = useBitcoinAmountUnit(selectedAccount.account?.symbol);
     const { elevation } = useElevation();
-
-    const { control, buyInfo } = useCoinmarketFormContext();
+    const { control } = methods;
     const { symbolsInfo } = useSelector(state => state.wallet.coinmarket.info);
 
     const options = useMemo(
         () =>
             coinmarketBuildCryptoOptions({
                 symbolsInfo,
-                cryptoCurrencies: buyInfo?.supportedCryptoCurrencies ?? new Set(),
+                cryptoCurrencies: supportedCryptoCurrencies ?? new Set(),
             }),
-        [buyInfo?.supportedCryptoCurrencies, symbolsInfo],
+        [supportedCryptoCurrencies, symbolsInfo],
     );
 
     return (
         <CoinmarketFormInput className={className}>
             <CoinmarketFormInputLabel label={label} />
             <Controller
-                name={FORM_CRYPTO_CURRENCY_SELECT}
+                name={cryptoSelectName}
                 control={control}
                 render={({ field: { onChange, value } }) => (
                     <Select
@@ -80,9 +89,7 @@ const CoinmarketFormInputAccount = ({ className, label }: CoinmarketFormInputPro
 
                             return translationId && <Translation id={translationId} />;
                         }}
-                        formatOptionLabel={(
-                            option: CoinmarketOptionsGroupProps['options'][number],
-                        ) => {
+                        formatOptionLabel={(option: CoinmarketCryptoListProps) => {
                             const networkSymbol = cryptoToNetworkSymbol(option.value);
 
                             return (
