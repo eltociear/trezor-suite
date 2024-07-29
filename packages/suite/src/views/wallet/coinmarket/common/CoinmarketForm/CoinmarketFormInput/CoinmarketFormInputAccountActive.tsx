@@ -26,6 +26,7 @@ import CoinmarketFormInputLabel from 'src/views/wallet/coinmarket/common/Coinmar
 import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
 import { FORM_CRYPTO_CURRENCY_SELECT } from 'src/constants/wallet/coinmarket/form';
 import { useCoinmarketBuildAccountGroups } from 'src/hooks/wallet/coinmarket/form/useCoinmarketSellFormDefaultValues';
+import { coinmarketGetAccountLabel } from 'src/utils/wallet/coinmarket/coinmarketUtils';
 
 const CoinmarketFormOptionTokenLogo = styled(CoinmarketCoinImage)`
     height: 18px;
@@ -70,7 +71,7 @@ const CoinmarketFormInputAccountActive = ({ className, label }: CoinmarketFormIn
                                 <CoinmarketFormOption>
                                     <CoinmarketFormOptionIcon symbol={option.label} />
                                     <CoinmarketFormOptionLabel>
-                                        {shouldSendInSats ? 'sats' : option.label}
+                                        {coinmarketGetAccountLabel(option.label, shouldSendInSats)}
                                     </CoinmarketFormOptionLabel>
                                     <CoinmarketFormOptionLabelLong>
                                         {option.cryptoName}

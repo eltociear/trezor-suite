@@ -16,7 +16,10 @@ import styled from 'styled-components';
 import { spacingsPx } from '@trezor/theme';
 import { networks } from '@suite-common/wallet-config';
 import { useMemo } from 'react';
-import { coinmarketBuildCryptoOptions } from 'src/utils/wallet/coinmarket/coinmarketUtils';
+import {
+    coinmarketBuildCryptoOptions,
+    coinmarketGetAccountLabel,
+} from 'src/utils/wallet/coinmarket/coinmarketUtils';
 import CryptoCategories from 'src/constants/wallet/coinmarket/cryptoCategories';
 import CoinmarketCoinImage from 'src/views/wallet/coinmarket/common/CoinmarketCoinImage';
 import {
@@ -86,7 +89,7 @@ const CoinmarketFormInputAccount = ({ className, label }: CoinmarketFormInputPro
                                 <CoinmarketFormOption>
                                     <CoinmarketFormOptionIcon symbol={option.label} />
                                     <CoinmarketFormOptionLabel>
-                                        {shouldSendInSats ? 'sats' : option.label}
+                                        {coinmarketGetAccountLabel(option.label, shouldSendInSats)}
                                     </CoinmarketFormOptionLabel>
                                     <CoinmarketFormOptionLabelLong>
                                         {option.cryptoName}

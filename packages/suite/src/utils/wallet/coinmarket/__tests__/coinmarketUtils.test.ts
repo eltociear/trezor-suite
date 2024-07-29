@@ -16,6 +16,7 @@ import {
     coinmarketBuildAccountOptions,
     coinmarketGetRoundedFiatAmount,
     coinmarketGetAmountLabels,
+    coinmarketGetAccountLabel,
 } from '../coinmarketUtils';
 import {
     FIXTURE_ACCOUNTS,
@@ -466,5 +467,12 @@ describe('coinmarket utils', () => {
         expect(coinmarketGetRoundedFiatAmount('0.23923')).toBe('0.24');
         expect(coinmarketGetRoundedFiatAmount('0.24423')).toBe('0.24');
         expect(coinmarketGetRoundedFiatAmount('0.2')).toBe('0.20');
+    });
+
+    it('coinmarketGetAccountLabel', () => {
+        expect(coinmarketGetAccountLabel('BTC', true)).toBe('sats');
+        expect(coinmarketGetAccountLabel('BTC', false)).toBe('BTC');
+        expect(coinmarketGetAccountLabel('USDT', true)).toBe('USDT');
+        expect(coinmarketGetAccountLabel('USDT', false)).toBe('USDT');
     });
 });
