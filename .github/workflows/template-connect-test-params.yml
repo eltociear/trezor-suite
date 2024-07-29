@@ -64,7 +64,7 @@ jobs:
       - name: "Upload partial coverage report"
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ inputs.test-description }}
+          name: coverage-${{ inputs.testDescription }}
           path: ./packages/connect/coverage
 
   web:
