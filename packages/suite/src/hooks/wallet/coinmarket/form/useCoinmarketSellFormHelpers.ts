@@ -30,7 +30,7 @@ import {
 } from 'src/types/coinmarket/coinmarketForm';
 import { Option } from 'src/types/wallet/coinmarketCommonTypes';
 import {
-    coinmarketGetSortedAccountsWithBalance,
+    coinmarketGetSortedAccounts,
     mapTestnetSymbol,
 } from 'src/utils/wallet/coinmarket/coinmarketUtils';
 import { cryptoToNetworkSymbol } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
@@ -50,7 +50,7 @@ export const useCoinmarketSellFormHelpers = ({
     const { shouldSendInSats } = useBitcoinAmountUnit(symbol);
     const accounts = useSelector(selectAccounts);
     const device = useSelector(selectDevice);
-    const accountsWithBalance = coinmarketGetSortedAccountsWithBalance({
+    const accountsSorted = coinmarketGetSortedAccounts({
         accounts,
         deviceState: device?.state,
     });
@@ -96,9 +96,7 @@ export const useCoinmarketSellFormHelpers = ({
     const onCryptoCurrencyChange = useCallback(
         (selected: CoinmarketAccountOptionsGroupOptionProps) => {
             const networkSymbol = cryptoToNetworkSymbol(selected.value);
-            const account = accountsWithBalance.find(
-                item => item.descriptor === selected.descriptor,
-            );
+            const account = accountsSorted.find(item => item.descriptor === selected.descriptor);
 
             setValue(FORM_OUTPUT_ADDRESS, '');
             setValue(FORM_CRYPTO_TOKEN, selected?.contractAddress ?? null);
@@ -122,7 +120,7 @@ export const useCoinmarketSellFormHelpers = ({
                 changeFeeLevel('normal'); // reset fee level
             }
         },
-        [accountsWithBalance, setValue, setAmountLimits, changeFeeLevel, dispatch],
+        [accountsSorted, setValue, setAmountLimits, changeFeeLevel, dispatch],
     );
 
     const setRatioAmount = useCallback(

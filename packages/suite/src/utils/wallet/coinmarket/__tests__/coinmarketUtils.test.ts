@@ -12,7 +12,7 @@ import {
     coinmarketBuildCryptoOptions,
     addIdsToQuotes,
     filterQuotesAccordingTags,
-    coinmarketGetSortedAccountsWithBalance,
+    coinmarketGetSortedAccounts,
     coinmarketBuildAccountOptions,
     coinmarketGetRoundedFiatAmount,
     coinmarketGetAmountLabels,
@@ -339,13 +339,17 @@ describe('coinmarket utils', () => {
         ]);
     });
 
-    it('coinmarketGetSortedAccountsWithBalance', () => {
-        const sortedAccountsWithBalance = coinmarketGetSortedAccountsWithBalance({
+    it('coinmarketGetSortedAccounts', () => {
+        const sortedAccounts = coinmarketGetSortedAccounts({
             accounts: FIXTURE_ACCOUNTS as Account[],
             deviceState: 'deviceState',
         });
 
-        expect(sortedAccountsWithBalance).toStrictEqual([FIXTURE_ACCOUNTS[1], FIXTURE_ACCOUNTS[2]]);
+        expect(sortedAccounts).toStrictEqual([
+            FIXTURE_ACCOUNTS[0],
+            FIXTURE_ACCOUNTS[1],
+            FIXTURE_ACCOUNTS[2],
+        ]);
     });
 
     it('coinmarketBuildAccountOptions', () => {
@@ -376,7 +380,7 @@ describe('coinmarket utils', () => {
             () => label,
         );
 
-        const sortedAccountsWithBalance = coinmarketBuildAccountOptions({
+        const sortedAccounts = coinmarketBuildAccountOptions({
             accounts: FIXTURE_ACCOUNTS as Account[],
             deviceState: 'deviceState',
             accountLabels: {},
@@ -384,7 +388,19 @@ describe('coinmarket utils', () => {
             symbolsInfo,
         });
 
-        expect(sortedAccountsWithBalance).toStrictEqual([
+        expect(sortedAccounts).toStrictEqual([
+            {
+                label,
+                options: [
+                    {
+                        balance: '0',
+                        cryptoName: 'Bitcoin',
+                        descriptor: 'descriptor1',
+                        label: 'BTC',
+                        value: 'BTC',
+                    },
+                ],
+            },
             {
                 label,
                 options: [
