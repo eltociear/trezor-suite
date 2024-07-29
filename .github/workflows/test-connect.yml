@@ -141,11 +141,12 @@ jobs:
       - name: Upload coverage to dev server
         shell: bash
         env:
-          DEPLOY_PATH: s3://dev.suite.sldev.cz/coverage/connect/${{ steps.extract_branch.outputs.branch }}
+          DEPLOY_PATH: s3://dev.suite.sldev.cz/meta/coverage/${{ steps.extract_branch.outputs.branch }}
         run: |
           echo "DEPLOY_PATH is set to ${DEPLOY_PATH}"
           mkdir -p tmp_build_directory
           cp -R ./packages/connect/coverage/merged-report/* tmp_build_directory/
+          echo "<html><head>build metadata</head><body><a href="/coverage">connect coverage</a></body></html>" > tmp_build_directory/index.html
           aws s3 sync --delete tmp_build_directory/ "${DEPLOY_PATH}"
 
   connect-legacy-canary-firmware:
