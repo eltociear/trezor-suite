@@ -1596,7 +1596,7 @@ export default defineMessages({
     },
     TR_COINMARKET_RECEIVE_METHOD: {
         defaultMessage: 'Receive method',
-        id: 'TR_COINMARKET_PAYMENT_METHOD',
+        id: 'TR_COINMARKET_RECEIVE_METHOD',
     },
     TR_COINMARKET_YOU_BUY: {
         defaultMessage: 'You buy',
