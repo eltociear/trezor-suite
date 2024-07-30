@@ -1,34 +1,128 @@
-import { SVGProps } from 'react';
+import { Dispatch, SetStateAction, SVGProps, useEffect, useState } from 'react';
 import { motion, AnimationProps, SVGMotionProps } from 'framer-motion';
 import styled, { useTheme } from 'styled-components';
-import { coinsColors } from '@trezor/theme';
+import { coinsColors, spacingsPx } from '@trezor/theme';
 import { motionEasing } from '../../../config/motion';
-import { CoinLogo, CoinLogoProps } from '../CoinLogo/CoinLogo';
+import { CoinLogo, CoinLogoProps, QUALITY_SIZE, useAssetUrl } from '../CoinLogo/CoinLogo';
 
-const Container = styled.div`
-    position: relative;
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-`;
+const Container = styled.div<{ $size: number }>(
+    ({ $size }) => `
+        position: relative;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        width: ${$size}px;
+        height: ${$size}px;
+        border-radius: 50%;
+        margin: ${spacingsPx.xxs};
+  `,
+);
+
+const rgbToHexColor = (rgbColor: string) => {
+    const [r, g, b] = rgbColor.split('-').map(Number);
+    const hex = [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+
+    return '#' + hex;
+};
+
+const getDominantColor = (imageData: ImageData) => {
+    const colorMap: { [key: string]: number } = {};
+    const numberOfPixelValues = 4;
+    let dominantKey = '';
+    let maxCount = 0;
+
+    for (let i = 0; i < imageData.data.length; i += numberOfPixelValues) {
+        const red = imageData.data[i];
+        const green = imageData.data[i + 1];
+        const blue = imageData.data[i + 2];
+        const alpha = imageData.data[i + 3];
+
+        if (alpha !== 255) {
+            continue; // ignore pixel with transparency
+        }
+
+        const imagePixelKey = `${red}-${green}-${blue}`;
+        colorMap[imagePixelKey] = (colorMap[imagePixelKey] || 0) + 1;
+
+        if (colorMap[imagePixelKey] > maxCount) {
+            dominantKey = imagePixelKey;
+            maxCount = colorMap[imagePixelKey];
+        }
+    }
+
+    return rgbToHexColor(dominantKey);
+};
+
+const loadImageAndProcessColor = (
+    image: HTMLImageElement,
+    size: number,
+    onSetColor: Dispatch<SetStateAction<string | undefined>>,
+) => {
+    const canvas = document.createElement('canvas');
+    const canvasContext = canvas.getContext('2d');
+
+    if (image && canvasContext) {
+        try {
+            canvas.width = size;
+            canvas.height = size;
+            canvasContext.drawImage(image, 0, 0, size, size);
+
+            const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+
+            onSetColor(getDominantColor(imageData));
+        } catch (error) {
+            console.error('Error processing image color:', error);
+            onSetColor(undefined);
+        }
+    }
+};
 
 export interface AssetShareIndicatorProps extends CoinLogoProps {
     percentageShare?: number;
+    showProgressCircle?: boolean;
+    firstCharacter?: string;
 }
 
 interface ProgressCircleProps
     extends Pick<AssetShareIndicatorProps, 'symbol' | 'percentageShare' | 'index'> {
+    iconUrl?: string;
     size: number;
 }
 
-const ProgressCircle = ({ symbol, size, percentageShare, index = 0 }: ProgressCircleProps) => {
+const ProgressCircle = ({
+    symbol,
+    iconUrl,
+    size,
+    percentageShare,
+    index = 0,
+}: ProgressCircleProps) => {
     const theme = useTheme();
+    const [dominantColor, setDominantColor] = useState<string | undefined>();
+
+    useEffect(() => {
+        if (!symbol && iconUrl) {
+            const image = new Image();
+
+            if (image) {
+                image.crossOrigin = 'anonymous';
+                image.onload = () => loadImageAndProcessColor(image, size * 2, setDominantColor); // process color from bigger image to get more accurate result for dominant color
+
+                image.onerror = error => {
+                    console.error('Error loading image:', error);
+                };
+
+                image.src = iconUrl;
+
+                return () => {
+                    image.onload = null;
+                };
+            }
+        }
+    }, [iconUrl, size, symbol]);
 
     const dimensions = size * 2;
-    const strokeColor = symbol && coinsColors[symbol] ? coinsColors[symbol] : theme.iconSubdued;
+    const strokeColor =
+        symbol && coinsColors[symbol] ? coinsColors[symbol] : dominantColor || theme.iconSubdued;
     const viewBox = `0 0 ${dimensions} ${dimensions}`;
 
     const strokeWidth = dimensions / 6;
@@ -101,15 +195,31 @@ export const AssetShareIndicator = ({
     size = 32,
     percentageShare,
     index,
+    coingeckoId = '',
+    contractAddress,
+    quality = 'medium',
     ...rest
-}: AssetShareIndicatorProps) => (
-    <Container className={className}>
-        <CoinLogo symbol={symbol} size={size} {...rest} />
-        <ProgressCircle
-            symbol={symbol}
-            size={size}
-            percentageShare={percentageShare}
-            index={index}
-        />
-    </Container>
-);
+}: AssetShareIndicatorProps) => {
+    const iconUrl = useAssetUrl(coingeckoId, contractAddress);
+    const coinLogoSize = !symbol ? QUALITY_SIZE[quality] : size;
+
+    return (
+        <Container className={className} $size={coinLogoSize * 2}>
+            <CoinLogo
+                symbol={symbol}
+                size={coinLogoSize}
+                coingeckoId={coingeckoId}
+                contractAddress={contractAddress}
+                quality={quality}
+                {...rest}
+            />
+            <ProgressCircle
+                symbol={symbol}
+                iconUrl={iconUrl}
+                size={coinLogoSize}
+                percentageShare={percentageShare}
+                index={index}
+            />
+        </Container>
+    );
+};
