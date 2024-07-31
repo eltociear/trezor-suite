@@ -6526,6 +6526,10 @@ export default defineMessages({
         id: 'TR_UNHIDE',
         defaultMessage: 'Unhide',
     },
+    TR_VIEW_ALL_TRANSACTION: {
+        id: 'TR_VIEW_ALL_TRANSACTION',
+        defaultMessage: 'View all transactions',
+    },
     TR_VIEW_IN_EXPLORER: {
         id: 'TR_VIEW_IN_EXPLORER',
         defaultMessage: 'View in explorer',

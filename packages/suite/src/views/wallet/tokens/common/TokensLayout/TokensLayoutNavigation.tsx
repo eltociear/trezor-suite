@@ -156,7 +156,7 @@ export const TokensLayoutNavigation = ({
                     searchQuery={searchQuery}
                     setExpanded={setExpanded}
                     setSearch={setSearchQuery}
-                    onSearch={e => setSearchQuery(e.target.value)}
+                    onSearch={setSearchQuery}
                     dataTest="@wallet/accounts/search-icon"
                 />
                 {showAddToken && (
