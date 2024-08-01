@@ -341,6 +341,7 @@ export const encode = (options: {
 
 export const encodeAck = (bytesOrState: Buffer | TransportProtocolState) => {
     if (Buffer.isBuffer(bytesOrState)) {
+        console.warn('encodeAvk', bytesOrState);
         // 1 byte
         const magic = bytesOrState.readUInt8();
         // sequence bit

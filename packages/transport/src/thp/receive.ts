@@ -29,7 +29,7 @@ export const readWithExpectedState = async (
     const chunk = await apiRead(signal);
 
     if (signal?.aborted) {
-        throw new Error('Already aborted');
+        throw new Error('Already aborted after read');
     }
 
     console.warn('readWithExpectedState chunk', protocolState?.expectedResponses, chunk);
@@ -54,13 +54,12 @@ export const readWithExpectedState = async (
 };
 
 export const receiveThpMessage = async ({
-    messages,
     protocolState,
     apiRead,
     apiWrite,
     signal,
-}: ReceiveThpMessageProps): Promise<any> => {
-    console.warn('receiveThpMessage start', apiRead);
+}: Omit<ReceiveThpMessageProps, 'messages'>): Promise<any> => {
+    console.warn('receiveThpMessage start', protocolState);
 
     const decoded = await receive(
         () => readWithExpectedState(apiRead, protocolState, signal),
@@ -74,9 +73,32 @@ export const receiveThpMessage = async ({
         const ackResult = await apiWrite(ack, signal);
 
         if (!ackResult.success) {
-            // what to do here?
+            // TODO: what to do here?
         }
     }
+
+    // if (isAckExpected) {
+    //     protocolState?.updateSyncBit('recv');
+    // }
+
+    // if (protocolState?.shouldUpdateNonce(decoded.messageType)) {
+    //     protocolState?.updateNonce('send');
+    //     protocolState?.updateNonce('recv');
+    // }
+
+    return decoded;
+};
+
+export type ParseThpMessageProps = {
+    messages: Root;
+    decoded: Awaited<ReturnType<typeof receive>>;
+    protocolState?: TransportProtocolState;
+};
+
+export const parseThpMessage = ({ decoded, messages, protocolState }: ParseThpMessageProps) => {
+    console.warn('receiveAndParseThpMessage start');
+
+    const isAckExpected = protocolThp.isAckExpected(protocolState?.expectedResponses || []);
 
     // make sure that THP protobuf messages are loaded
     protocolThp.loadProtobuf(messages);

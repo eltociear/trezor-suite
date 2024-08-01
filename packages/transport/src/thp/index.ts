@@ -1,2 +1,2 @@
-export { readWithExpectedState, receiveThpMessage } from './receive';
+export { readWithExpectedState, receiveThpMessage, parseThpMessage } from './receive';
 export { sendThpMessage } from './send';

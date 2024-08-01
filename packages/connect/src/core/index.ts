@@ -903,6 +903,9 @@ const onPopupClosed = (customErrorMessage?: string) => {
     const error = customErrorMessage
         ? ERRORS.TypedError('Method_Cancel', customErrorMessage)
         : ERRORS.TypedError('Method_Interrupted');
+
+    uiPromises.rejectAll(error);
+
     // Device was already acquired. Try to interrupt running action which will throw error from onCall try/catch block
     if (_deviceList.isConnected() && _deviceList.asArray().length > 0) {
         _deviceList.allDevices().forEach(d => {

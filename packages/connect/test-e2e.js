@@ -29,17 +29,18 @@ const run = async () => {
         }
 
         if (event.type === 'ui-request_thp_pairing') {
-            // TrezorConnect.cancel();
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            TrezorConnect.uiResponse({
-                type: 'ui-receive_thp_pairing_tag',
-                payload: {
-                    // source: 'qr-code',
-                    // value: '87e2db0f783c1b30c585000f71b7ae28',
-                    source: 'code-entry',
-                    value: 723282, // emu first run only
-                },
-            });
+            TrezorConnect.cancel();
+
+            // await new Promise(resolve => setTimeout(resolve, 2000));
+            // TrezorConnect.uiResponse({
+            //     type: 'ui-receive_thp_pairing_tag',
+            //     payload: {
+            //         // source: 'qr-code',
+            //         // value: '87e2db0f783c1b30c585000f71b7ae28',
+            //         source: 'code-entry',
+            //         value: 723282, // emu first run only
+            //     },
+            // });
         }
 
         if (event.type === 'ui-button') {
@@ -49,7 +50,8 @@ const run = async () => {
 
     await TrezorConnect.init({
         manifest: { appUrl: 'a', email: 'b' },
-        transports: process.argv[2] === 'udp' ? ['UdpTransport'] : ['NodeUsbTransport'],
+        // transports: process.argv[2] === 'udp' ? ['UdpTransport'] : ['NodeUsbTransport'],
+        transports: process.argv[2] === 'udp' ? ['UdpTransport'] : ['BridgeTransport'],
         pendingTransportEvent: false,
         // lazyLoad: true,
         thp: {

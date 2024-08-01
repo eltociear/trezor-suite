@@ -8,6 +8,7 @@ import {
     TransportProtocol,
 } from '@trezor/protocol';
 import { receive as receiveUtil } from '@trezor/transport/src/utils/receive';
+import { sendThpMessage, receiveThpMessage } from '@trezor/transport/src/thp';
 import { createChunks, sendChunks } from '@trezor/transport/src/utils/send';
 import { SessionsBackground } from '@trezor/transport/src/sessions/background';
 import { SessionsClient } from '@trezor/transport/src/sessions/client';
@@ -98,7 +99,7 @@ export const createCore = (apiArg: 'usb' | 'udp' | AbstractApi, logger?: Log) =>
         signal: AbortSignal;
         protocol: TransportProtocol;
     }) => {
-        console.warn('Read', path);
+        console.warn('readUtil', path);
         try {
             const { messageType, payload, header } = await receiveUtil(
                 () =>
@@ -258,6 +259,44 @@ export const createCore = (apiArg: 'usb' | 'udp' | AbstractApi, logger?: Log) =>
         }
         logger?.debug(`core: call: api.openDevice done`);
 
+        if (protocol.name === 'v2') {
+            const b = Buffer.from(body, 'hex');
+            const chunks = createChunks(b, protocol.getChunkHeader(b), api.chunkSize);
+            protocolState?.setChannel(b.subarray(1, 3));
+
+            const apiWrite = (chunk: Buffer, attemptSignal?: AbortSignal) =>
+                api.write(path, chunk, attemptSignal || signal);
+            const apiRead = (attemptSignal?: AbortSignal) =>
+                api.read(path, attemptSignal || signal);
+
+            console.warn('protocolState', protocolState?.recvBit, data);
+
+            await sendThpMessage({
+                protocolState,
+                chunks,
+                apiWrite,
+                apiRead,
+                signal,
+            });
+
+            // console.warn('protocolState after send', protocolState?.recvBit);
+
+            const message = await receiveThpMessage({
+                protocolState,
+                apiWrite,
+                apiRead,
+                signal,
+            });
+
+            return {
+                success: true as const,
+                payload: JSON.stringify({
+                    body: protocolV2.encode(message.payload, message).toString('hex'),
+                    state: protocolState?.serialize(),
+                }),
+            };
+        }
+
         const writeResult = await writeUtil({ path, data: body, protocol, signal });
         if (!writeResult.success) {
             logger?.error(`core: call: writeUtil ${writeResult.error}`);
@@ -271,7 +310,7 @@ export const createCore = (apiArg: 'usb' | 'udp' | AbstractApi, logger?: Log) =>
             return readResult;
         }
 
-        if (protocol.name === 'v2') {
+        if (protocol.name !== 'bridge') {
             const buffer = Buffer.from(readResult.payload, 'hex');
             const thpMessage = protocol.decode(buffer);
             const isThpAck = protocolThp.decodeAck(thpMessage);
@@ -342,22 +381,33 @@ export const createCore = (apiArg: 'usb' | 'udp' | AbstractApi, logger?: Log) =>
         }
         const { path } = sessionsResult.payload;
         const protocol = getProtocol(url);
+        const { body, protocolState } = getRequestBody(data, protocol);
+
+        console.warn('---> BOOOOODY', body, protocolState);
 
         const openResult = await api.openDevice(path, false, signal);
         if (!openResult.success) {
             return openResult;
         }
 
+        // if (protocol.name === 'v2' && !protocol.decode) {
+        //     const apiWrite = (chunk: Buffer, attemptSignal?: AbortSignal) =>
+        //         api.write(path, chunk, attemptSignal || signal);
+        //     const apiRead = (attemptSignal?: AbortSignal) =>
+        //         api.read(path, attemptSignal || signal);
+
+        // }
+
         if (protocol.name === 'v2') {
-            const writeResult = await writeUtil({ path, data, signal, protocol });
+            const writeResult = await writeUtil({ path, data: body, signal, protocol });
             if (!writeResult.success) {
                 return writeResult;
             }
-            // Read ACK
-            const readResult = await readUtil({ path, signal, protocol });
-            if (!readResult.success) {
-                return readResult;
-            }
+            // // Read ACK
+            // const readResult = await readUtil({ path, signal, protocol });
+            // if (!readResult.success) {
+            //     return readResult;
+            // }
 
             return writeResult;
         }
@@ -389,14 +439,44 @@ export const createCore = (apiArg: 'usb' | 'udp' | AbstractApi, logger?: Log) =>
             return openResult;
         }
 
-        console.warn('receive readingUtil');
+        if (protocol.name === 'v2') {
+            console.warn('receive readingUtil', url);
+            const apiWrite = (chunk: Buffer, attemptSignal?: AbortSignal) =>
+                api.write(path, chunk, attemptSignal || signal);
+            const apiRead = (attemptSignal?: AbortSignal) =>
+                api.read(path, attemptSignal || signal);
+
+            try {
+                const message = await receiveThpMessage({
+                    protocolState: {
+                        expectedResponses: [4, 128, 1000],
+                    } as any,
+                    apiWrite,
+                    apiRead,
+                    signal,
+                });
+
+                return message;
+            } catch (e) {
+                return {
+                    success: false,
+                    error: e.message,
+                };
+            }
+
+            // console.warn('receive', message);
+
+            // return message;
+        }
 
         const realResult = await readUtil({ path, signal, protocol });
+
+        console.warn('---> receive Send ThpReadAck', realResult);
+
         if (!realResult.success) {
             return realResult;
         }
 
-        console.warn('receive Send ThpReadAck');
         const chunk = protocolThp.encodeAck(Buffer.from(realResult.payload, 'hex'));
 
         const ackResult = await writeUtil({

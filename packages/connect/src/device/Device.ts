@@ -261,6 +261,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 }
             }
 
+            console.log('Device.this.releasePromise');
             this.releasePromise = this.transport.release({
                 session: this.activitySessionID,
                 path: this.originalDescriptor.path,
@@ -281,6 +282,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
         this.removeAllListeners();
         // make sure that Device_CallInProgress will not be thrown
         delete this.runPromise;
+        console.log('Device.cleanup.release');
         await this.release();
         // restore DEVICE.ACQUIRED listeners
         acquiredListeners.forEach(l => this.once(DEVICE.ACQUIRED, l));
@@ -451,6 +453,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             options.keepSession === false
         ) {
             this.keepSession = false;
+            console.log('_runinner.release');
             await this.release();
         }
 
@@ -831,6 +834,8 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 if (this.commands) {
                     await this.commands.cancel();
                 }
+
+                console.log('Device.this.transport.release');
 
                 return this.transport.release({
                     session: this.activitySessionID,

@@ -44,10 +44,20 @@ export class ThpProtocolState {
     }
 
     updateSyncBit(type: 'send' | 'recv', syncBit?: ThpMessageSyncBit) {
+        const calc = (curr: ThpMessageSyncBit, v?: ThpMessageSyncBit) => {
+            if (typeof v === 'number') {
+                return v;
+            }
+
+            return curr > 0 ? 0 : 1;
+        };
         if (type === 'send') {
-            this._sendBit = syncBit ?? this._sendBit > 0 ? 0 : 1;
+            // this._sendBit = syncBit ?? this._sendBit > 0 ? 0 : 1;
+            this._sendBit = calc(this._sendBit, syncBit);
         } else {
-            this._recvBit = syncBit ?? this._recvBit > 0 ? 0 : 1;
+            console.warn('----> update recv bit', syncBit, syncBit ?? 'a');
+            // this._recvBit = syncBit ?? this._recvBit > 0 ? 0 : 1;
+            this._recvBit = calc(this._recvBit, syncBit);
         }
     }
 
@@ -147,6 +157,31 @@ export class ThpProtocolState {
         }
 
         return true;
+    }
+
+    updateState(messageName: string) {
+        if (
+            [
+                'ThpCreateChannelRequest',
+                'ThpCreateChannelResponse',
+                'ThpHandshakeInitRequest',
+                'ThpHandshakeInitResponse',
+                'ThpHandshakeCompletionRequest',
+                'ThpHandshakeCompletionResponse',
+            ].includes(messageName)
+        ) {
+            // keep nonce at initial values for first three messages of the handshake workflow
+            this._sendNonce = 0;
+            this._recvNonce = 1;
+        } else {
+            this._sendNonce += 1;
+            this._recvNonce += 1;
+        }
+
+        if (messageName !== 'ThpCreateChannelResponse') {
+            this._sendBit = this._sendBit > 0 ? 0 : 1;
+            this._recvBit = this._recvBit > 0 ? 0 : 1;
+        }
     }
 
     toString() {

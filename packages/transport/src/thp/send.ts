@@ -18,7 +18,9 @@ export const sendThpMessage = async ({
     signal,
 }: SendThpMessageProps) => {
     const expectedResponses = protocolThp.getExpectedResponse(chunks[0]);
+    console.warn('expectedResponses', expectedResponses, chunks[0], chunks);
     const isAckExpected = protocolThp.isAckExpected(chunks[0]);
+    console.warn('isAckExpected', isAckExpected);
     if (!isAckExpected) {
         const sendResult = await sendChunks(chunks, apiWrite);
         if (!sendResult.success) {

@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'crypto';
 import { Messages } from '@trezor/transport';
 import { thp as protocolThp } from '@trezor/protocol';
+import { createDeferred } from '@trezor/utils';
 import type { Device } from './Device';
 import { UiResponseThpPairingTag, DEVICE } from '../events';
 
@@ -202,6 +203,7 @@ export const initThpChannel = async (device: Device, settings: any) => {
 const promptThpPairing = (device: Device) => {
     return new Promise<UiResponseThpPairingTag>((resolve, reject) => {
         device.emit(DEVICE.THP_PAIRING, device, (err, code) => {
+            console.warn('--promptThpPairing resolve', err, code);
             if (err) {
                 reject(err);
             } else {
@@ -236,6 +238,7 @@ const thpWaitForThpPairingTag = async (device: Device): Promise<DefaultMessageRe
 
     console.warn('debugState', debugState);
 
+    const dfd = createDeferred();
     const readCancel = device.transport.receive({
         session: device.activitySessionID!,
         protocol: device.protocol,
@@ -247,12 +250,17 @@ const thpWaitForThpPairingTag = async (device: Device): Promise<DefaultMessageRe
             if (!r.success) {
                 console.warn('readCancelPromise resolved with error', r);
 
+                //return Promise.resolve();
+                // never resolve?
                 return new Promise<DefaultMessageResponse>(() => {});
             }
-            console.warn('readCancelPromise result', r);
+            console.warn('readCancelPromise result success', r);
+
+            // cp.resolve(r as unknown as DefaultMessageResponse);
 
             // TODO: type is wrong, r is a TransportResponse not DefaultMessageResponse
-            return r as unknown as DefaultMessageResponse;
+            // return r as unknown as DefaultMessageResponse;
+            return new Promise<DefaultMessageResponse>(() => {});
         })
         .catch(e => {
             console.warn('readCancelPromise error', e);
@@ -264,14 +272,56 @@ const thpWaitForThpPairingTag = async (device: Device): Promise<DefaultMessageRe
 
     const pairingPromise = promptThpPairing(device).then(
         response => {
-            readCancel.abort();
-
             response.payload.value = thp_pairing_code_entry_code;
 
+            readCancel.abort();
+
+            console.warn('.. waiting for CP');
+
+            // return (
+            //     cancelPromise
+            //         .then(cp => {
+            //             console.warn('cancelPromise resolved with error-1', cp);
+            //         })
+            //         .catch(e => {
+            //             console.warn('cancelPromise resolved with error-2', e);
+            //         })
+            //         // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            //         .finally(() => processThpPairingResponse(device, response))
+            // );
+
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            return processThpPairingResponse(device, response);
+            return processThpPairingResponse(device, response).then(() => {
+                throw new Error('End');
+            });
+
+            // const hostKeys = protocolThp.getCpaceHostKeys(
+            //     response.payload.value,
+            //     device.transportState!.handshakeCredentials!.handshakeHash,
+            // );
+
+            // return device.thpCall(device, 'Cancel', {})transport
+            //     .send({
+            //         session: device.activitySessionID!,
+            //         protocol: device.protocol,
+            //         protocolState: device.transportState,
+            //         name: 'ThpCodeEntryCpaceHost',
+            //         data: {
+            //             cpace_host_public_key: hostKeys.publicKey.toString('hex'),
+            //         },
+            //     })
+            //     .promise.then(() => {
+            //         return new Promise<DefaultMessageResponse>(() => {});
+            //     });
         },
-        () => thpCall(device, 'Cancel', {}),
+        () =>
+            device.transport.send({
+                session: device.activitySessionID!,
+                protocol: device.protocol,
+                protocolState: device.transportState,
+                name: 'Cancel',
+                data: {},
+            }).promise,
     );
 
     console.warn('Waiting....');

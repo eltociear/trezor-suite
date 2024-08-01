@@ -11,6 +11,12 @@ function isString(payload: UnknownPayload): payload is string {
     return typeof payload === 'string';
 }
 
+function isObject(payload: UnknownPayload): payload is string {
+    console.warn('isObject', payload);
+
+    return typeof payload === 'object';
+}
+
 export function info(res: UnknownPayload) {
     if (isString(res)) {
         return error({ error: ERRORS.WRONG_RESULT_TYPE });
@@ -80,7 +86,7 @@ export function acquire(res: UnknownPayload) {
 }
 
 export function call(res: UnknownPayload) {
-    if (!isString(res)) {
+    if (!isString(res) && !isObject(res)) {
         return error({ error: ERRORS.WRONG_RESULT_TYPE });
     }
 

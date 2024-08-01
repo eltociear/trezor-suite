@@ -362,6 +362,8 @@ export const getExpectedResponse = (bytes: Buffer) => {
 };
 
 export const isExpectedResponse = (bytes: Buffer, protocolState?: TransportProtocolState) => {
+    if (bytes.length < 3) return false;
+
     const header = readHeader(bytes);
     const magic = clearControlBit(header.magic);
     const expectedResponses = protocolState?.expectedResponses || [];

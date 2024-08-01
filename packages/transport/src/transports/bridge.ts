@@ -263,20 +263,15 @@ export class BridgeTransport extends AbstractTransport {
         return body.toString('hex');
     }
 
-    private getResponseBody(
-        response: string,
-        protocol?: TransportProtocol,
-        protocolState?: TransportProtocolState,
-    ) {
+    private getResponseBody(response: string, protocol?: TransportProtocol) {
         if (this.legacyBridge && protocol?.name === 'v2') {
             // TODO: try catch + better condition?
-            const { body, state } = JSON.parse(response);
-            protocolState?.deserialize(state);
+            const { body, state } = response as any;
 
-            return body;
+            return { body, state };
         }
 
-        return response;
+        return { body: response, state: undefined };
     }
 
     // https://github.dev/trezor/trezord-go/blob/f559ee5079679aeb5f897c65318d3310f78223ca/core/core.go#L534
@@ -310,17 +305,27 @@ export class BridgeTransport extends AbstractTransport {
                     return response;
                 }
 
-                const payload = this.getResponseBody(response.payload, protocol, protocolState);
+                const { body, state } = this.getResponseBody(response.payload, protocol);
+                console.warn('State in the response', response.payload, protocolState);
                 const message = await receiveAndParse(
                     this.messages,
-                    () => Promise.resolve(Buffer.from(payload, 'hex')),
+                    () => Promise.resolve(Buffer.from(body, 'hex')),
                     protocol,
+                    protocolState,
                 );
+                // protocolState?.deserialize(state);
+                console.warn('State after the response', state, protocolState);
+                protocolState?.updateState(message.type);
 
-                if (protocolState?.shouldUpdateNonce(name)) {
-                    protocolState?.updateNonce('send');
-                    protocolState?.updateNonce('recv');
-                }
+                // const isAckExpected = protocolThp.isAckExpected(protocolState?.expectedResponses || []);
+                // if (isAckExpected) {
+                //     protocolState?.updateSyncBit('recv');
+                // }
+
+                // if (protocolState?.shouldUpdateNonce(message.type)) {
+                //     protocolState?.updateNonce('send');
+                //     protocolState?.updateNonce('recv');
+                // }
 
                 return this.success(message);
             },

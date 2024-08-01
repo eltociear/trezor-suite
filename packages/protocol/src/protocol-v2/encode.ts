@@ -8,6 +8,8 @@ export const getChunkHeader = (data: Buffer) => {
         throw new Error(ERRORS.PROTOCOL_MALFORMED);
     }
 
+    console.warn('getChunkHeader', data);
+
     const channel = data.subarray(1, 3);
     const header = Buffer.concat([Buffer.from([THP_CONTINUATION_PACKET]), channel]);
 

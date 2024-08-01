@@ -8,7 +8,7 @@ import {
 } from './abstract';
 import { AbstractApi } from '../api/abstract';
 import { buildMessage, createChunks, sendChunks } from '../utils/send';
-import { sendThpMessage, receiveThpMessage } from '../thp';
+import { sendThpMessage, receiveThpMessage, parseThpMessage } from '../thp';
 import { receiveAndParse } from '../utils/receive';
 import { SessionsClient } from '../sessions/client';
 import * as ERRORS from '../errors';
@@ -220,12 +220,17 @@ export abstract class AbstractApiTransport extends AbstractTransport {
                             signal,
                         });
 
-                        const message = await receiveThpMessage({
-                            messages: this.messages,
+                        const decoded = await receiveThpMessage({
                             protocolState,
                             apiWrite,
                             apiRead,
                             signal,
+                        });
+
+                        const message = parseThpMessage({
+                            messages: this.messages,
+                            decoded,
+                            protocolState,
                         });
 
                         return this.success(message);
@@ -287,7 +292,7 @@ export abstract class AbstractApiTransport extends AbstractTransport {
                 try {
                     const protocol = customProtocol || v1Protocol;
                     const { getChunkHeader } = protocol;
-                    console.warn('???????? just pure sending', name, protocol.name, protocolState);
+                    console.warn('just pure sending', name, protocol.name, protocolState);
                     const bytes = buildMessage({
                         messages: this.messages,
                         name,
@@ -302,21 +307,21 @@ export abstract class AbstractApiTransport extends AbstractTransport {
                         throw new Error(sendResult.error);
                     }
 
-                    if (protocol.name === 'v2') {
-                        console.warn('EXPECTING THP ACK!');
-                        const message = await receiveAndParse(
-                            this.messages,
-                            () =>
-                                this.api.read(path).then(result => {
-                                    if (result.success) {
-                                        return result.payload;
-                                    }
-                                    throw new Error(result.error);
-                                }),
-                            protocol,
-                        );
-                        console.warn('RECEIVED THP ACK!', message);
-                    }
+                    // if (protocol.name === 'v2') {
+                    //     console.warn('EXPECTING THP ACK!');
+                    //     const message = await receiveAndParse(
+                    //         this.messages,
+                    //         () =>
+                    //             this.api.read(path).then(result => {
+                    //                 if (result.success) {
+                    //                     return result.payload;
+                    //                 }
+                    //                 throw new Error(result.error);
+                    //             }),
+                    //         protocol,
+                    //     );
+                    //     console.warn('RECEIVED THP ACK!', message);
+                    // }
 
                     return this.success(undefined);
                 } catch (err) {
@@ -359,12 +364,17 @@ export abstract class AbstractApiTransport extends AbstractTransport {
                     const protocol = customProtocol || v1Protocol;
 
                     if (protocol.name === 'v2') {
-                        const message = await receiveThpMessage({
-                            messages: this.messages,
+                        const decoded = await receiveThpMessage({
                             protocolState,
                             apiWrite,
                             apiRead,
                             signal,
+                        });
+
+                        const message = parseThpMessage({
+                            messages: this.messages,
+                            decoded,
+                            protocolState,
                         });
 
                         return this.success(message);
