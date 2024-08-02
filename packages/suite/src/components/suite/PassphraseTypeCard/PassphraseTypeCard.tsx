@@ -6,7 +6,7 @@ import styled, { css } from 'styled-components';
 import { borders, spacingsPx } from '@trezor/theme';
 import { countBytesInString } from '@trezor/utils';
 import { formInputsMaxLength } from '@suite-common/validators';
-import { TooltipProps } from '../Tooltip/Tooltip';
+import { TooltipProps } from '@trezor/components';
 import { EnterOnTrezorButton } from './EnterOnTrezorButton';
 import { DeviceModelInternal } from '@trezor/connect';
 import { PassphraseTypeCardHeading } from './PassphraseTypeCardHeading';

@@ -14,7 +14,7 @@ import {
 } from '@trezor/theme';
 import { UIVariant } from '../../config/types';
 import { TransientProps, useElevation } from '../..';
-import { FrameProps, FramePropsKeys, withFrameProps } from '../common/frameProps';
+import { FrameProps, FramePropsKeys, withFrameProps } from '../../utils/frameProps';
 
 export const allowedWarningFrameProps: FramePropsKeys[] = ['margin'];
 type AllowedFrameProps = Pick<FrameProps, (typeof allowedWarningFrameProps)[number]>;
