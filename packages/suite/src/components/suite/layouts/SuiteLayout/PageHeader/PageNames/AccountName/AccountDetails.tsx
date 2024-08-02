@@ -39,8 +39,8 @@ const rotateOut = keyframes`
 const DetailsContainer = styled.div<{ $isBalanceShown: boolean }>`
     display: flex;
     flex-direction: column;
-    justify-content: ${({ $isBalanceShown }) => $isBalanceShown ? 'space-between' : 'center'};
-    animation: ${({ $isBalanceShown }) => $isBalanceShown ? rotateIn : rotateOut} 0.3s forwards;
+    justify-content: ${({ $isBalanceShown }) => ($isBalanceShown ? 'space-between' : 'center')};
+    animation: ${({ $isBalanceShown }) => ($isBalanceShown ? rotateIn : rotateOut)} 0.3s forwards;
 `;
 
 const AccountHeading = styled(H2)<{ $isBalanceShown: boolean }>`
@@ -77,7 +77,7 @@ export const AccountDetails = ({ selectedAccount, isBalanceShown }: AccountDetai
         <DetailsContainer $isBalanceShown={isBalanceShown}>
             <AccountHeading $isBalanceShown={isBalanceShown}>
                 <MetadataLabeling
-                    defaultVisibleValue={ 
+                    defaultVisibleValue={
                         <AccountLabel
                             accountLabel={selectedAccountLabels.accountLabel}
                             accountType={accountType}
@@ -92,6 +92,7 @@ export const AccountDetails = ({ selectedAccount, isBalanceShown }: AccountDetai
                         value: selectedAccountLabels.accountLabel,
                     }}
                     defaultEditableValue={defaultAccountLabelString({ accountType, symbol, index })}
+                    updateFlag={isBalanceShown}
                 />
             </AccountHeading>
             {isBalanceShown && (
