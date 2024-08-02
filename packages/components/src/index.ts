@@ -68,7 +68,7 @@ export * from './components/typography/Paragraph/Paragraph';
 export * from './components/typography/Text/Text';
 export * from './components/typography/TruncateWithTooltip/TruncateWithTooltip';
 export * from './components/Warning/Warning';
-export { StoryColumn } from './support/Story';
+export { StoryColumn, StoryWrapper } from './support/Story';
 
 export * from './constants/keyboardEvents';
 
