@@ -46,6 +46,7 @@ const _callMethods: AbstractMethod<any>[] = []; // generic type is irrelevant. o
 let _interactionTimeout: InteractionTimeout;
 let _deviceListInitReject: ((e: Error) => void) | undefined;
 let _overridePromise: Promise<void> | undefined;
+let _reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
 
 const methodSynchronize = getSynchronize();
 let waitForFirstMethod = createDeferred();
@@ -459,7 +460,7 @@ const inner = async (method: AbstractMethod<any>, device: Device) => {
 /**
  * Processing incoming message.
  * This method is async that's why it returns Promise but the real response is passed by postMessage(ResponseMessage)
- * @param {CoreMessage} message
+ * @param {IFrameCallMessage} message
  * @returns {Promise<void>}
  * @memberof Core
  */
@@ -473,8 +474,6 @@ const onCall = async (message: IFrameCallMessage) => {
 
     const responseID = message.id;
     const origin = DataManager.getSettings('origin')!;
-    const env = DataManager.getSettings('env')!;
-    const useCoreInPopup = DataManager.getSettings('useCoreInPopup');
 
     const { preferredDevice } = storage.loadForOrigin(origin) || {};
     if (preferredDevice && !message.payload.device) {
@@ -527,15 +526,6 @@ const onCall = async (message: IFrameCallMessage) => {
         return Promise.resolve();
     }
 
-    if (!_deviceList.isConnected() && !_deviceList.pendingConnection()) {
-        const { transports, pendingTransportEvent } = DataManager.getSettings();
-        // transport is missing try to initialize it once again
-        // TODO bridge transport is probably not reusable, so I can't remove this setTransports yet.
-        _deviceList.setTransports(transports);
-        // TODO is pendingTransportEvent needed here?
-        await _deviceList.init({ pendingTransportEvent });
-    }
-
     if (method.isManagementRestricted()) {
         postMessage(createPopupMessage(POPUP.CANCEL_POPUP_REQUEST));
         postMessage(
@@ -547,6 +537,26 @@ const onCall = async (message: IFrameCallMessage) => {
         return Promise.resolve();
     }
 
+    return await onCallDevice(message, method);
+};
+
+const onCallDevice = async (message: IFrameCallMessage, method: AbstractMethod<any>) => {
+    const responseID = message.id;
+    const { origin, env, useCoreInPopup, transportReconnect } = DataManager.getSettings();
+
+    let messageResponse: CoreEventMessage;
+
+    if (!_deviceList.isConnected() && !_deviceList.pendingConnection()) {
+        const { transports, pendingTransportEvent } = DataManager.getSettings();
+        // transport is missing try to initialize it once again
+        // TODO bridge transport is probably not reusable, so I can't remove this setTransports yet.
+        _deviceList.setTransports(transports);
+        // TODO is pendingTransportEvent needed here?
+        await _deviceList.init({ pendingTransportEvent });
+    }
+
+    // track start time
+    const initDeviceTime = Date.now();
     // find device
     let device: Device;
     try {
@@ -557,6 +567,21 @@ const onCall = async (message: IFrameCallMessage) => {
             await waitForPopup();
             // show message about transport
             postMessage(createUiMessage(UI.TRANSPORT));
+
+            // Retry onCallDevice again
+            // NOTE: this should change after multi-transports refactor, where transport will be always alive
+            if (transportReconnect && (env === 'web' || env === 'webextension')) {
+                // 10s between reconnects
+                const reconnectTime = 10000 - (Date.now() - initDeviceTime);
+                console.warn('Reconnecting in', reconnectTime);
+
+                return await new Promise((resolve, reject) => {
+                    if (_reconnectTimeout) clearTimeout(_reconnectTimeout);
+                    _reconnectTimeout = setTimeout(() => {
+                        onCallDevice(message, method).then(resolve).catch(reject);
+                    }, reconnectTime);
+                });
+            }
         } else {
             // cancel popup request
             postMessage(createPopupMessage(POPUP.CANCEL_POPUP_REQUEST));
@@ -632,7 +657,7 @@ const onCall = async (message: IFrameCallMessage) => {
     device.on(DEVICE.SAVE_STATE, (state: string) => {
         // Persist internal state only in case of core in popup
         // Currently also only for webextension until we asses security implications
-        if (useCoreInPopup && env === 'webextension') {
+        if (useCoreInPopup && env === 'webextension' && origin) {
             storage.saveForOrigin(store => {
                 return {
                     ...store,
@@ -648,7 +673,7 @@ const onCall = async (message: IFrameCallMessage) => {
         }
     });
 
-    if (!device.getInternalState() && useCoreInPopup && env === 'webextension') {
+    if (!device.getInternalState() && useCoreInPopup && env === 'webextension' && origin) {
         // Restore internal state if available
         const { preferredDevice } = storage.loadForOrigin(origin) || {};
         if (
@@ -755,6 +780,9 @@ const cleanup = () => {
     popupPromise.clear();
     uiPromises.clear();
     _interactionTimeout.stop();
+    if (_reconnectTimeout) {
+        clearTimeout(_reconnectTimeout);
+    }
     _log.debug('Cleanup...');
 };
 
