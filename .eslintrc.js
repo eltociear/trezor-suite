@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     root: true,
     parser: '@typescript-eslint/parser',
@@ -9,7 +11,7 @@ module.exports = {
             jsx: true,
         },
     },
-    plugins: ['import', '@typescript-eslint', 'react-hooks', 'jest', 'chai-friendly', 'react'],
+    plugins: ['import', '@typescript-eslint', 'react-hooks', 'jest', 'chai-friendly', 'react','local-rules'],
     extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:react/recommended',
@@ -21,6 +23,11 @@ module.exports = {
             version: 'detect',
         },
         'import/ignore': ['node_modules', '\\.(coffee|scss|css|less|hbs|svg|json)$'],
+        'import/resolver': {
+            node: {
+                paths: [path.resolve(__dirname, 'eslint-rules')],
+            },
+        },
     },
     env: {
         jest: true,
@@ -279,6 +286,8 @@ module.exports = {
             'error',
             { blankLine: 'always', prev: '*', next: 'return' },
         ],
+        'local-rules/no-override-ds-component': ['warn', { packageName: '@trezor/components' }],
+
     },
     overrides: [
         {
