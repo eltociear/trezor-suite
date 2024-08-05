@@ -8,6 +8,7 @@ import * as URLS from '@trezor/urls';
 import { notificationsActions } from '@suite-common/toast-notifications';
 import { formInputsMaxLength } from '@suite-common/validators';
 import type { Output } from '@suite-common/wallet-types';
+import TrezorConnect from '@trezor/connect';
 import {
     isAddressValid,
     isAddressDeprecated,
@@ -50,6 +51,7 @@ interface AddressProps {
 export const Address = ({ output, outputId, outputsCount }: AddressProps) => {
     const [addressDeprecatedUrl, setAddressDeprecatedUrl] =
         useState<ReturnType<typeof isAddressDeprecated>>(undefined);
+    const [hasAddressChecksummed, setHasAddressChecksummed] = useState<boolean | undefined>();
     const dispatch = useDispatch();
     const { device } = useDevice();
     const {
@@ -65,7 +67,6 @@ export const Address = ({ output, outputId, outputsCount }: AddressProps) => {
         setDraftSaveRequest,
     } = useSendFormContext();
     const { translationString } = useTranslation();
-
     const { descriptor, networkType, symbol } = account;
     const inputName = `outputs.${outputId}.address` as const;
     // NOTE: compose errors are always associated with the amount.
@@ -140,10 +141,12 @@ export const Address = ({ output, outputId, outputsCount }: AddressProps) => {
 
             case 'checksum':
                 return {
-                    onClick: () =>
+                    onClick: () => {
                         setValue(inputName, toChecksumAddress(address), {
                             shouldValidate: true,
-                        }),
+                        });
+                        setHasAddressChecksummed(true);
+                    },
                     text: translationString('TR_CONVERT_TO_CHECKSUM_ADDRESS'),
                 };
 
@@ -161,7 +164,10 @@ export const Address = ({ output, outputId, outputsCount }: AddressProps) => {
     };
 
     const { ref: inputRef, ...inputField } = register(inputName, {
-        onChange: () => composeTransaction(amountInputName),
+        onChange: () => {
+            composeTransaction(amountInputName);
+            setHasAddressChecksummed(false);
+        },
         required: translationString('RECIPIENT_IS_NOT_SET'),
         validate: {
             deprecated: (value: string) => {
@@ -194,9 +200,32 @@ export const Address = ({ output, outputId, outputsCount }: AddressProps) => {
                 }
             },
             // eth addresses are valid without checksum but Trezor displays them as checksummed
-            checksum: (value: string) => {
-                if (networkType === 'ethereum' && !checkAddressCheckSum(value)) {
-                    return translationString('RECIPIENT_IS_NOT_VALID');
+            checksum: async (address: string) => {
+                if (networkType === 'ethereum') {
+                    const params = {
+                        descriptor: address,
+                        coin: symbol,
+                    };
+
+                    //1. If the address is used but unchecksummed, then Suite will automatically
+                    //convert the address to the correct checksummed form and inform the user as described in the OP.
+                    const result = await TrezorConnect.getAccountInfo(params); //TODO handle error
+                    if (result.success) {
+                        if (result.payload.history.total !== 0 && !checkAddressCheckSum(address)) {
+                            setValue(inputName, toChecksumAddress(address), {
+                                shouldValidate: true,
+                            });
+                            setHasAddressChecksummed(true);
+                        }
+
+                        //2. If the address is not checksummed at all and not found in blockbook.
+                        //offer to checksum it with a button
+                        if (result.payload.history.total == 0) {
+                            if (address === address.toLowerCase()) {
+                                return translationString('TR_ETH_ADDRESS_NOT_USED_NOT_CHECKSUMMED');
+                            }
+                        }
+                    }
                 }
             },
             rippleToSelf: (value: string) => {
