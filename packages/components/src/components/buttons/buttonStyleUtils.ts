@@ -1,13 +1,12 @@
 import { css } from 'styled-components';
 
-import { Color, Colors, Elevation, spacings, spacingsPx } from '@trezor/theme';
+import { borders, Color, Colors, Elevation, spacings, spacingsPx } from '@trezor/theme';
 import { capitalizeFirstLetter } from '@trezor/utils';
 import type { UIHorizontalAlignment, UISize, UIVariant } from '../../config/types';
 
-export type ButtonVariant = Extract<
-    UIVariant,
-    'primary' | 'secondary' | 'tertiary' | 'info' | 'warning' | 'destructive'
->;
+export type ButtonVariant =
+    | Extract<UIVariant, 'primary' | 'secondary' | 'tertiary' | 'info' | 'warning' | 'destructive'>
+    | 'welcome';
 export type ButtonSize = Extract<UISize, 'large' | 'medium' | 'small' | 'tiny'>;
 export type ButtonState = 'normal' | 'hover';
 export type IconAlignment = Extract<UIHorizontalAlignment, 'left' | 'right'>;
@@ -171,7 +170,32 @@ export const getVariantStyle = (
                     background: ${({ theme }) => theme.backgroundAlertRedSubtleOnElevation1};
                 }
             `;
+        case 'welcome':
+            return css`
+                background: ${mapElevationToButtonBackground({
+                    elevation,
+                    variant: 'tertiary',
+                    state: 'normal',
+                })};
+                border-radius: ${borders.radii.sm};
+                width: 40px;
+                aspect-ratio: 1;
 
+                path {
+                    fill: ${({ theme }) => theme.textOnTertiary};
+                }
+
+                &:hover,
+                &:active {
+                    background: ${({ theme }) => theme.backgroundSurfaceElevation1};
+                }
+
+                &:hover svg {
+                    path {
+                        fill: black;
+                    }
+                }
+            `;
         // no default
     }
 };

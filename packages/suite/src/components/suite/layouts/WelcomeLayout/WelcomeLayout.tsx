@@ -3,8 +3,6 @@ import styled from 'styled-components';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import {
-    TrezorLogo,
-    Button,
     variables,
     SVG_IMAGES,
     useElevation,
@@ -12,23 +10,24 @@ import {
     ElevationDown,
     ElevationContext,
     Column,
+    IconButton,
 } from '@trezor/components';
 import { useOnce } from '@trezor/react-utils';
-import { Translation } from 'src/components/suite';
 // importing directly, otherwise unit tests fail, seems to be a styled-components issue
-import { TrezorLink } from 'src/components/suite/TrezorLink';
-import { useSelector } from 'src/hooks/suite';
+import { useDispatch, useSelector } from 'src/hooks/suite';
 import { selectBannerMessage } from '@suite-common/message-system';
 import { MessageSystemBanner } from 'src/components/suite/banners';
-import { isWeb } from '@trezor/env-utils';
-import { TREZOR_URL, SUITE_URL } from '@trezor/urls';
+
 import { resolveStaticPath } from '@suite-common/suite-utils';
 import { GuideButton, GuideRouter } from 'src/components/guide';
 import { useGuide } from 'src/hooks/guide';
 import { MAX_ONBOARDING_WIDTH } from 'src/constants/suite/layout';
-import { NavSettings } from './NavSettings';
 import { Elevation, mapElevationToBackground, spacingsPx } from '@trezor/theme';
 import { TrafficLightOffset } from '../../TrafficLightOffset';
+import { goto } from 'src/actions/suite/routerActions';
+import { Translation } from '../../Translation';
+
+const LEFT_WRAPPER_WIDTH = '84px';
 
 const Wrapper = styled.div`
     display: flex;
@@ -43,15 +42,6 @@ const Body = styled.div`
     height: 100%;
 `;
 
-const Expander = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex: 1;
-    margin-top: 96px;
-`;
-
 const WelcomeWrapper = styled.div<{ $elevation: Elevation }>`
     background-color: ${mapElevationToBackground};
 
@@ -60,20 +50,9 @@ const WelcomeWrapper = styled.div<{ $elevation: Elevation }>`
     }
 `;
 
+// TODO asi tie 3 spodne veci prec
 const MotionWelcome = styled(motion.div)`
     height: 100%;
-    overflow: hidden;
-    min-width: 380px;
-    max-width: 660px;
-`;
-
-const LinksContainer = styled.div`
-    bottom: 0;
-    display: flex;
-    margin: ${spacingsPx.xl};
-    align-items: center;
-    flex-flow: row wrap;
-    gap: ${spacingsPx.md};
 `;
 
 const Content = styled.div<{ $elevation: Elevation }>`
@@ -96,11 +75,6 @@ const Content = styled.div<{ $elevation: Elevation }>`
     }
 `;
 
-const SettingsWrapper = styled.div`
-    position: absolute;
-    align-self: flex-end;
-`;
-
 const ChildrenWrapper = styled.div`
     display: flex;
     flex: 1;
@@ -109,6 +83,20 @@ const ChildrenWrapper = styled.div`
     justify-content: center;
     width: 100%;
     max-width: ${MAX_ONBOARDING_WIDTH}px;
+`;
+
+const TopLeftWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    padding: ${spacingsPx.xs};
+    gap: ${spacingsPx.xs};
+`;
+
+const LeftContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 `;
 
 interface WelcomeLayoutProps {
@@ -123,6 +111,35 @@ const Left = () => {
     // do not animate welcome bar on initial load
     const isFirstRender = useOnce(true, false);
 
+    const dispatch = useDispatch();
+
+    const handleClickSettings = () => {
+        dispatch(goto('settings-index'));
+    };
+
+    const handleClickTrezor = () => {
+        dispatch(goto('suite-index')); // TODO check the correct path, maybe suite-start or more paths?
+    };
+
+    // const settingsSubpages = useMemo<Array<NavigationItem>>(
+    //     () => [
+    //         {
+    //             id: 'suite-index',
+    //             title: <Translation id="TR_GENERAL" />,
+    //             position: 'primary',
+    //             callback: () => dispatch(goto('settings-index')),
+    //         },
+    //         {
+    //             id: 'settings-device',
+    //             title: <Translation id="TR_DEVICE" />,
+    //             position: 'primary',
+
+    //             callback: () => dispatch(goto('suite-index')),
+    //         },
+    //     ],
+    //     [dispatch],
+    // );
+
     return (
         <WelcomeWrapper $elevation={elevation}>
             <AnimatePresence>
@@ -133,8 +150,8 @@ const Left = () => {
                             minWidth: isFirstRender ? '380px' : 0,
                         }}
                         animate={{
-                            width: '40vw',
-                            minWidth: '380px',
+                            width: `${LEFT_WRAPPER_WIDTH}`,
+                            minWidth: `${LEFT_WRAPPER_WIDTH}`,
                             transition: { duration: 0.3, bounce: 0 },
                         }}
                         exit={{
@@ -145,32 +162,23 @@ const Left = () => {
                     >
                         <TrafficLightOffset>
                             <Column justifyContent="center" alignItems="center" height="100%">
-                                <Expander data-test="@welcome/title">
-                                    <TrezorLogo type="symbol" width="57px" />
-                                </Expander>
-
-                                <LinksContainer>
-                                    {isWeb() && (
-                                        <TrezorLink type="hint" variant="nostyle" href={SUITE_URL}>
-                                            <Button
-                                                variant="tertiary"
-                                                icon="EXTERNAL_LINK"
-                                                iconAlignment="right"
-                                            >
-                                                <Translation id="TR_ONBOARDING_DOWNLOAD_DESKTOP_APP" />
-                                            </Button>
-                                        </TrezorLink>
-                                    )}
-                                    <TrezorLink type="hint" variant="nostyle" href={TREZOR_URL}>
-                                        <Button
-                                            variant="tertiary"
-                                            icon="EXTERNAL_LINK"
-                                            iconAlignment="right"
-                                        >
-                                            trezor.io
-                                        </Button>
-                                    </TrezorLink>
-                                </LinksContainer>
+                                <LeftContainer>
+                                    <TopLeftWrapper>
+                                        <IconButton
+                                            label={<Translation id="TR_CONNECT" />}
+                                            icon="TREZOR_LOGO"
+                                            variant="welcome"
+                                            onClick={handleClickTrezor}
+                                        />
+                                        <IconButton
+                                            label={<Translation id="TR_SETTINGS" />}
+                                            icon="SETTINGS"
+                                            variant="welcome"
+                                            onClick={handleClickSettings}
+                                            data-test="@suite/menu/settings"
+                                        />
+                                    </TopLeftWrapper>
+                                </LeftContainer>
                             </Column>
                         </TrafficLightOffset>
                     </MotionWelcome>
@@ -185,10 +193,6 @@ const Right = ({ children }: { children: ReactNode }) => {
 
     return (
         <Content $elevation={elevation}>
-            <SettingsWrapper>
-                <NavSettings />
-            </SettingsWrapper>
-
             <ChildrenWrapper>
                 <ElevationUp>{children}</ElevationUp>
             </ChildrenWrapper>
