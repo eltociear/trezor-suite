@@ -9,7 +9,6 @@ import {
 import { useState } from 'react';
 import { SCREEN_QUERY } from '@trezor/components/src/config/variables';
 import { Translation } from 'src/components/suite';
-import { cryptoToCoinSymbol } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
 import CoinmarketFormOfferItem from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormOfferItem';
 import {
     CoinmarketFormInputLabelText,
@@ -78,9 +77,7 @@ const CoinmarketFormOffer = () => {
     const bestScoredQuoteAmounts = getCryptoQuoteAmountProps(bestScoredQuote, context);
 
     const selectedCrypto = getValues().cryptoSelect;
-    const receiveCurrency = bestScoredQuoteAmounts?.receiveCurrency
-        ? cryptoToCoinSymbol(bestScoredQuoteAmounts.receiveCurrency)
-        : null;
+    const receiveCurrency = bestScoredQuoteAmounts?.receiveCurrency;
     const { amountInCrypto } = getValues();
     const amountLabels = coinmarketGetAmountLabels({ type, amountInCrypto });
     const sendAmount =
@@ -106,10 +103,10 @@ const CoinmarketFormOffer = () => {
                             ? bestScoredQuoteAmounts.receiveAmount
                             : '0'
                     }
-                    symbol={
+                    cryptoId={
                         !state.isLoadingOrInvalid && receiveCurrency
                             ? receiveCurrency
-                            : selectedCrypto?.label ?? ''
+                            : selectedCrypto?.value
                     }
                 />
             )}

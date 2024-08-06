@@ -1,18 +1,13 @@
-import type { AppState } from 'src/types/suite';
-import type { FormState as ReactHookFormState, UseFormReturn } from 'react-hook-form';
-import type { Account, Network } from 'src/types/wallet';
-import type { FeeLevel } from '@trezor/connect';
-import type { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
-import type {
-    FeeInfo,
-    FormState,
-    PrecomposedLevels,
-    PrecomposedLevelsCardano,
-} from '@suite-common/wallet-types';
-import type { AmountLimits, CryptoAmountLimits, Option } from './coinmarketCommonTypes';
+import type { FeeInfo, FormState, PrecomposedLevels, PrecomposedLevelsCardano } from '@suite-common/wallet-types';
 import { Rate } from '@suite-common/wallet-types';
+import type { FeeLevel } from '@trezor/connect';
 import { CryptoSymbol, CryptoSymbolInfo } from 'invity-api';
+import type { FormState as ReactHookFormState, UseFormReturn } from 'react-hook-form';
+import type { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
+import type { AppState } from 'src/types/suite';
+import type { Account, Network } from 'src/types/wallet';
 import { SendContextValues } from 'src/types/wallet/sendForm';
+import type { AmountLimits, CryptoAmountLimits, Option } from './coinmarketCommonTypes';
 
 export const CRYPTO_INPUT = 'outputs.0.amount';
 export const CRYPTO_TOKEN = 'outputs.0.token';
@@ -31,6 +26,7 @@ export interface ExchangeFormContextValues extends UseFormReturn<ExchangeFormSta
     isComposing: boolean;
     changeFeeLevel: (level: FeeLevel['label']) => void;
     exchangeInfo?: ExchangeInfo;
+    // TODO: Obsolete, remove!
     symbolsInfo?: CryptoSymbolInfo[];
     defaultCurrency: Option;
     composeRequest: SendContextValues['composeTransaction'];

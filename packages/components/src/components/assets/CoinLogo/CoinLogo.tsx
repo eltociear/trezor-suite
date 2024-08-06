@@ -12,9 +12,10 @@ const UPDATED_ICONS_LIST_URL_BASE = 'https://data.trezor.io/suite/icons/coins/';
 export const QUALITY_SIZE = {
     small: 16,
     medium: 24,
+    large: 32,
 };
 
-type Quality = keyof typeof QUALITY_SIZE;
+export type Quality = keyof typeof QUALITY_SIZE;
 
 const useCheckUrlAccessibility = (url: string) => {
     const [isAccessible, setIsAccessible] = useState(false);

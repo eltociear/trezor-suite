@@ -7,9 +7,8 @@ import {
     mapTestnetSymbol,
     getSendCryptoOptions,
     getTagAndInfoNote,
-    buildCryptoOption,
+    buildCryptoOptionObsolete,
     getBestRatedQuote,
-    coinmarketBuildCryptoOptions,
     addIdsToQuotes,
     filterQuotesAccordingTags,
     coinmarketGetSortedAccounts,
@@ -28,13 +27,6 @@ import * as BUY_FIXTURE from 'src/utils/wallet/coinmarket/__fixtures__/buyUtils'
 import * as SELL_FIXTURE from 'src/utils/wallet/coinmarket/__fixtures__/sellUtils';
 import * as EXCHANGE_FIXTURE from 'src/utils/wallet/coinmarket/__fixtures__/exchangeUtils';
 import { CryptoSymbol, CryptoSymbolInfo } from 'invity-api';
-import {
-    CryptoCategoryA,
-    CryptoCategoryB,
-    CryptoCategoryC,
-    CryptoCategoryD,
-    CryptoCategoryE,
-} from 'src/constants/wallet/coinmarket/cryptoCategories';
 import { useAccountLabel } from 'src/components/suite/AccountLabel';
 
 jest.mock('src/components/suite/AccountLabel', () => ({
@@ -48,17 +40,17 @@ describe('coinmarket utils', () => {
     });
 
     it('buildCryptoOption', () => {
-        expect(buildCryptoOption('BTC')).toStrictEqual({
+        expect(buildCryptoOptionObsolete('BTC')).toStrictEqual({
             value: 'BTC',
             label: 'BTC',
             cryptoName: 'Bitcoin',
         });
-        expect(buildCryptoOption('ETH')).toStrictEqual({
+        expect(buildCryptoOptionObsolete('ETH')).toStrictEqual({
             value: 'ETH',
             label: 'ETH',
             cryptoName: 'Ethereum',
         });
-        expect(buildCryptoOption('USDT@ETH')).toStrictEqual({
+        expect(buildCryptoOptionObsolete('USDT@ETH')).toStrictEqual({
             value: 'USDT@ETH',
             label: 'USDT',
             cryptoName: 'Ethereum',

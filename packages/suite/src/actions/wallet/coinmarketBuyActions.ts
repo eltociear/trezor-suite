@@ -1,19 +1,19 @@
-import { Account } from 'src/types/wallet';
 import {
     BuyListResponse,
     BuyProviderInfo,
-    BuyTradeQuoteRequest,
     BuyTrade,
-    CryptoSymbol,
-    FiatCurrencyCode,
+    BuyTradeQuoteRequest,
+    CryptoId,
+    FiatCurrencyCode
 } from 'invity-api';
-import invityAPI from 'src/services/suite/invityAPI';
-import { COINMARKET_BUY, COINMARKET_COMMON } from './constants';
-import { Dispatch } from 'src/types/suite';
-import regional from 'src/constants/wallet/coinmarket/regional';
 import * as modalActions from 'src/actions/suite/modalActions';
 import { verifyAddress as verifyBuyAddress } from 'src/actions/wallet/coinmarket/coinmarketCommonActions';
+import regional from 'src/constants/wallet/coinmarket/regional';
+import invityAPI from 'src/services/suite/invityAPI';
 import { CoinmarketFiatCurrenciesProps } from 'src/types/coinmarket/coinmarket';
+import { Dispatch } from 'src/types/suite';
+import { Account } from 'src/types/wallet';
+import { COINMARKET_BUY, COINMARKET_COMMON } from './constants';
 
 export interface BuyInfo {
     buyInfo: Omit<BuyListResponse, 'defaultAmountsOfFiatCurrencies'> & {
@@ -21,7 +21,7 @@ export interface BuyInfo {
     };
     providerInfos: { [name: string]: BuyProviderInfo };
     supportedFiatCurrencies: Set<string>;
-    supportedCryptoCurrencies: Set<CryptoSymbol>;
+    supportedCryptoCurrencies: Set<CryptoId>;
 }
 
 export type CoinmarketBuyAction =
@@ -79,7 +79,7 @@ export const loadBuyInfo = async (): Promise<BuyInfo> => {
     buyInfo.providers.forEach(e => (providerInfos[e.name] = e));
 
     const tradedFiatCurrencies: string[] = [];
-    const tradedCoins: CryptoSymbol[] = [];
+    const tradedCoins: CryptoId[] = [];
     buyInfo.providers.forEach(p => {
         tradedFiatCurrencies.push(...p.tradedFiatCurrencies.map(c => c.toLowerCase()));
         tradedCoins.push(...p.tradedCoins);

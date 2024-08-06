@@ -2,13 +2,12 @@ import { Account } from '@suite-common/wallet-types';
 import { AppState } from '../suite';
 import { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
 import {
-    BankAccount,
-    CryptoSymbol,
+    BankAccount, CryptoId,
     ExchangeTrade,
     P2pProviderInfo,
     P2pQuote,
     P2pQuotesRequest,
-    SellFiatTrade,
+    SellFiatTrade
 } from 'invity-api';
 import { Timer } from '@trezor/react-utils';
 import { TradeSell } from '../wallet/coinmarketCommonTypes';
@@ -103,8 +102,8 @@ export type CoinmarketOffersContextValues<T extends CoinmarketTradeType> =
 export interface CoinmarketCryptoAmountProps {
     amountInCrypto: boolean | undefined;
     sendAmount: string | number | undefined;
-    sendCurrency: string | undefined;
+    sendCurrency: CryptoId | string | undefined; // TODO: ???
     receiveAmount: string | number | undefined;
-    receiveCurrency: CryptoSymbol | undefined;
+    receiveCurrency: CryptoId | undefined;
     className?: string;
 }

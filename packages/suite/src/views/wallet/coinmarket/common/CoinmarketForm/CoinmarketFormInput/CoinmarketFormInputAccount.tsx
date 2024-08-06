@@ -1,63 +1,46 @@
-import { useSelector } from 'src/hooks/suite';
-import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
-import {
-    cryptoToNetworkSymbol,
-    isCryptoSymbolToken,
-} from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
-import { Controller } from 'react-hook-form';
 import { Select, useElevation } from '@trezor/components';
+import { spacingsPx } from '@trezor/theme';
+import React, { useMemo } from 'react';
+import { Controller } from 'react-hook-form';
+import { GroupBase } from 'react-select';
+import { Translation } from 'src/components/suite';
 import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
 import {
     CoinmarketCryptoListProps,
     CoinmarketOptionsGroupProps,
+    CoinmarketTradeBuyType
 } from 'src/types/coinmarket/coinmarket';
-import { Translation } from 'src/components/suite';
-import styled from 'styled-components';
-import { spacingsPx } from '@trezor/theme';
-import { networks } from '@suite-common/wallet-config';
-import { useMemo } from 'react';
-import {
-    coinmarketBuildCryptoOptions,
-    coinmarketGetAccountLabel,
-} from 'src/utils/wallet/coinmarket/coinmarketUtils';
-import CryptoCategories from 'src/constants/wallet/coinmarket/cryptoCategories';
-import CoinmarketCoinImage from 'src/views/wallet/coinmarket/common/CoinmarketCoinImage';
+import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
+import { parseCryptoId } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
 import {
     CoinmarketFormInput,
     CoinmarketFormOption,
     CoinmarketFormOptionLabel,
     CoinmarketFormOptionLabelLong,
-    CoinmarketFormOptionNetwork,
+    CoinmarketFormOptionNetwork
 } from 'src/views/wallet/coinmarket';
-import CoinmarketFormInputLabel from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormInput/CoinmarketFormInputLabel';
-import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
+import CoinmarketFormInputLabel
+    from 'src/views/wallet/coinmarket/common/CoinmarketForm/CoinmarketFormInput/CoinmarketFormInputLabel';
+import styled from 'styled-components';
 import { FORM_CRYPTO_CURRENCY_SELECT } from 'src/constants/wallet/coinmarket/form';
+import { useCoinmarketCoins } from 'src/hooks/wallet/coinmarket/useCoinmarketCoins';
+import { CoinmarketCoinLogo } from '../../CoinmarketCoinLogo';
 
-const CoinmarketFormOptionTokenLogo = styled(CoinmarketCoinImage)`
-    height: 18px;
-`;
-
-const CoinmarketFormOptionIcon = styled(CoinmarketFormOptionTokenLogo)`
+const CoinmarketFormOptionIcon = styled(CoinmarketCoinLogo)`
     display: flex;
     align-items: center;
     margin-right: ${spacingsPx.xs};
 `;
 
 const CoinmarketFormInputAccount = ({ className, label }: CoinmarketFormInputProps) => {
-    const { selectedAccount } = useSelector(state => state.wallet);
-    const { shouldSendInSats } = useBitcoinAmountUnit(selectedAccount.account?.symbol);
     const { elevation } = useElevation();
 
-    const { control, buyInfo } = useCoinmarketFormContext();
-    const { symbolsInfo } = useSelector(state => state.wallet.coinmarket.info);
+    const { getNetworkName, buildCryptoOptions } = useCoinmarketCoins();
+    const { control, buyInfo } = useCoinmarketFormContext<CoinmarketTradeBuyType>();
 
     const options = useMemo(
-        () =>
-            coinmarketBuildCryptoOptions({
-                symbolsInfo,
-                cryptoCurrencies: buyInfo?.supportedCryptoCurrencies ?? new Set(),
-            }),
-        [buyInfo?.supportedCryptoCurrencies, symbolsInfo],
+        () => buildCryptoOptions(buyInfo?.supportedCryptoCurrencies ?? new Set()),
+        [buildCryptoOptions, buyInfo?.supportedCryptoCurrencies],
     );
 
     return (
@@ -73,34 +56,30 @@ const CoinmarketFormInputAccount = ({ className, label }: CoinmarketFormInputPro
                         onChange={(selected: CoinmarketCryptoListProps) => {
                             onChange(selected);
                         }}
-                        formatGroupLabel={group => {
-                            const translationId =
-                                CryptoCategories[(group as CoinmarketOptionsGroupProps).label]
-                                    ?.translationId;
+                        formatGroupLabel={(group: GroupBase<any>) => {
+                            const { label, networkName } = group as CoinmarketOptionsGroupProps;
 
-                            return translationId && <Translation id={translationId} />;
+                            return <Translation id={label} values={{ networkName }} />;
                         }}
                         formatOptionLabel={(
                             option: CoinmarketOptionsGroupProps['options'][number],
                         ) => {
-                            const networkSymbol = cryptoToNetworkSymbol(option.value);
+                            const { networkId, contractAddress } = parseCryptoId(option.value);
 
                             return (
                                 <CoinmarketFormOption>
-                                    <CoinmarketFormOptionIcon symbol={option.label} />
+                                    <CoinmarketFormOptionIcon cryptoId={option.value} />
                                     <CoinmarketFormOptionLabel>
-                                        {coinmarketGetAccountLabel(option.label, shouldSendInSats)}
+                                        {option.label}
                                     </CoinmarketFormOptionLabel>
                                     <CoinmarketFormOptionLabelLong>
                                         {option.cryptoName}
                                     </CoinmarketFormOptionLabelLong>
-                                    {option.value &&
-                                        isCryptoSymbolToken(option.value) &&
-                                        networkSymbol && (
-                                            <CoinmarketFormOptionNetwork $elevation={elevation}>
-                                                {networks[networkSymbol].name}
-                                            </CoinmarketFormOptionNetwork>
-                                        )}
+                                    {contractAddress && (
+                                        <CoinmarketFormOptionNetwork $elevation={elevation}>
+                                            {getNetworkName(networkId)}
+                                        </CoinmarketFormOptionNetwork>
+                                    )}
                                 </CoinmarketFormOption>
                             );
                         }}

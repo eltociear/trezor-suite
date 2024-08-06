@@ -1,20 +1,12 @@
-import type { BuyInfo } from 'src/actions/wallet/coinmarketBuyActions';
-import type { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
-import type { SellInfo } from 'src/actions/wallet/coinmarketSellActions';
-import type {
-    Option,
-    Trade,
-    TradeBuy,
-    TradeExchange,
-    TradeSell,
-    TradeType,
-} from 'src/types/wallet/coinmarketCommonTypes';
+import { NetworkSymbol } from '@suite-common/wallet-config';
+import { Account } from '@suite-common/wallet-types';
+import { Timer } from '@trezor/react-utils';
 import {
     BuyCryptoPaymentMethod,
     BuyTrade,
     BuyTradeStatus,
-    CryptoSymbol,
-    CryptoSymbolInfo,
+    Coins,
+    CryptoId,
     ExchangeTrade,
     ExchangeTradeStatus,
     FiatCurrencyCode,
@@ -23,22 +15,23 @@ import {
     SellTradeStatus,
     WatchBuyTradeResponse,
     WatchExchangeTradeResponse,
-    WatchSellTradeResponse,
+    WatchSellTradeResponse
 } from 'invity-api';
-import { Account } from '@suite-common/wallet-types';
 import { AnyAction, Dispatch } from 'redux';
-import { State } from 'src/reducers/wallet/coinmarketReducer';
+import type { BuyInfo } from 'src/actions/wallet/coinmarketBuyActions';
+import type { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
+import type { SellInfo } from 'src/actions/wallet/coinmarketSellActions';
 import { WithSelectedAccountLoadedProps } from 'src/components/wallet';
-import {
-    CryptoCategoryA,
-    CryptoCategoryB,
-    CryptoCategoryC,
-    CryptoCategoryD,
-    CryptoCategoryE,
-} from 'src/constants/wallet/coinmarket/cryptoCategories';
-import { NetworkSymbol } from '@suite-common/wallet-config';
+import { State } from 'src/reducers/wallet/coinmarketReducer';
 import { ExtendedMessageDescriptor, TrezorDevice } from 'src/types/suite';
-import { Timer } from '@trezor/react-utils';
+import type {
+    Option,
+    Trade,
+    TradeBuy,
+    TradeExchange,
+    TradeSell,
+    TradeType
+} from 'src/types/wallet/coinmarketCommonTypes';
 import { AccountsState } from '@suite-common/wallet-core';
 
 export type UseCoinmarketProps = WithSelectedAccountLoadedProps;
@@ -136,25 +129,8 @@ export interface CoinmarketPaymentMethodListProps extends Option {
     label: string;
 }
 
-export type CryptoCategoryType =
-    | typeof CryptoCategoryA
-    | typeof CryptoCategoryB
-    | typeof CryptoCategoryC
-    | typeof CryptoCategoryD
-    | typeof CryptoCategoryE;
-
-export type CryptoCategoriesProps = {
-    [key in CryptoCategoryType]?: {
-        translationId: Extract<
-            ExtendedMessageDescriptor['id'],
-            `TR_COINMARKET_CRYPTO_CATEGORY_${string}`
-        >;
-        network?: NetworkSymbol;
-    };
-};
-
 export interface CoinmarketCryptoListProps {
-    value: CryptoSymbol;
+    value: CryptoId;
     label: string; // token shortcut
     cryptoName: string | null; // full name
 }
@@ -167,13 +143,16 @@ export type CoinmarketUtilsProvidersProps = {
     };
 };
 
-export interface CoinmarketBuildOptionsProps {
-    symbolsInfo: CryptoSymbolInfo[] | undefined;
-    cryptoCurrencies: Set<CryptoSymbol>;
+export interface CoinmarketCoinsProps {
+    getNetworkName: (cryptoId: CryptoId) => string | undefined;
+    getNetworkSymbol: (cryptoId: CryptoId) => NetworkSymbol | undefined;
+    buildCryptoOptions: (cryptoIds: Set<CryptoId>) => CoinmarketOptionsGroupProps[];
+    buildDefaultCryptoOption: (cryptoId: CryptoId) => CoinmarketCryptoListProps;
 }
 
 export interface CoinmarketOptionsGroupProps {
-    label: CryptoCategoryType;
+    label: ExtendedMessageDescriptor['id'];
+    networkName?: string;
     options: CoinmarketCryptoListProps[];
 }
 
@@ -183,7 +162,7 @@ export interface CoinmarketGetSortedAccountsProps {
 }
 
 export interface CoinmarketBuildAccountOptionsProps extends CoinmarketGetSortedAccountsProps {
-    symbolsInfo: CryptoSymbolInfo[] | undefined;
+    availableCoins: Coins;
     accountLabels: Record<string, string | undefined>;
     defaultAccountLabelString: ({
         accountType,

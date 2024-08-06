@@ -1,44 +1,37 @@
 import { spacingsPx } from '@trezor/theme';
+import { CryptoId } from 'invity-api';
 import { FormattedCryptoAmount } from 'src/components/suite';
 import styled from 'styled-components';
-import CoinmarketCoinImage from './CoinmarketCoinImage';
+import { useCoinmarketCoins } from '../../../../hooks/wallet/coinmarket/useCoinmarketCoins';
+import { CoinmarketCoinLogo } from './CoinmarketCoinLogo';
 
 const Wrapper = styled.div`
     display: flex;
     align-items: center;
 `;
 
-const TokenLogo = styled(CoinmarketCoinImage)`
-    height: 21px;
+const StyledCoinmarketCoinLogo = styled(CoinmarketCoinLogo)`
     margin-right: ${spacingsPx.sm};
 `;
 
 export interface CoinmarketCryptoAmountProps {
     amount?: string | number;
-    symbol?: string;
+    cryptoId: CryptoId;
     displayLogo?: boolean;
 }
 
 export const CoinmarketCryptoAmount = ({
     amount,
-    symbol,
+    cryptoId,
     displayLogo,
 }: CoinmarketCryptoAmountProps) => {
-    const symbolUpper = symbol?.toUpperCase();
-
-    if (!amount || amount === '') {
-        return (
-            <Wrapper>
-                {displayLogo && <TokenLogo symbol={symbol} />}
-                {symbolUpper}
-            </Wrapper>
-        );
-    }
+    const { getNetworkSymbol } = useCoinmarketCoins();
+    const symbol = getNetworkSymbol(cryptoId);
 
     return (
         <Wrapper>
-            {displayLogo && <TokenLogo symbol={symbol} />}
-            <FormattedCryptoAmount value={amount} symbol={symbol} disableHiddenPlaceholder />
+            {displayLogo && <StyledCoinmarketCoinLogo cryptoId={cryptoId} />}
+            {amount ? <FormattedCryptoAmount value={amount} symbol={symbol} disableHiddenPlaceholder /> : symbol?.toUpperCase()}
         </Wrapper>
     );
 };

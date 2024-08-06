@@ -1,5 +1,5 @@
-import { NetworkSymbol, networks } from '@suite-common/wallet-config';
-import { CryptoSymbol } from 'invity-api';
+import { networks, NetworkSymbol } from '@suite-common/wallet-config';
+import { CryptoId, CryptoSymbol } from 'invity-api';
 
 const networkToCryptoSymbols: Partial<Record<NetworkSymbol, CryptoSymbol>> = {
     btc: 'BTC',
@@ -25,6 +25,21 @@ Object.keys(networkToCryptoSymbols).forEach(
         (cryptoToNetworkSymbols[networkToCryptoSymbols[key as NetworkSymbol] as CryptoSymbol] =
             key as NetworkSymbol),
 );
+
+interface ParsedCryptoId {
+    networkId: CryptoId;
+    contractAddress: string | undefined;
+}
+
+export function parseCryptoId(cryptoId: CryptoId): ParsedCryptoId {
+    const parts = cryptoId.split('@');
+
+    return { networkId: parts[0] as CryptoId, contractAddress: parts[1] };
+}
+
+export function toTokenCryptoId(networkId: string, contractAddress: string): CryptoId {
+    return `${networkId}@${contractAddress}` as CryptoId;
+}
 
 export function isCryptoSymbolToken(cryptoSymbol: CryptoSymbol): boolean {
     return cryptoSymbol.indexOf('@') >= 0;

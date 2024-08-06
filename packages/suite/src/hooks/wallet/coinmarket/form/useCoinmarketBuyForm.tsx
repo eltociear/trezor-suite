@@ -130,7 +130,7 @@ const useCoinmarketBuyForm = ({
         mode: 'onChange',
         defaultValues: isDraft && draftUpdated ? draftUpdated : defaultValues,
     });
-    const { register, control, formState, reset, setValue, handleSubmit } = methods;
+    const { register, control, formState, setValue, handleSubmit } = methods;
     const values = useWatch<CoinmarketBuyFormProps>({ control });
     const previousValues = useRef<typeof values | null>(offFirstRequest ? draftUpdated : null);
 
@@ -149,8 +149,8 @@ const useCoinmarketBuyForm = ({
     const { toggleAmountInCrypto } = useCoinmarketSatsSwitcher({
         account,
         methods,
-        cryptoInputAmount: quotesByPaymentMethod?.[0]?.receiveStringAmount,
-        fiatInputAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
+        quoteCryptoAmount: quotesByPaymentMethod?.[0]?.receiveStringAmount,
+        quoteFiatAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
         network,
         setIsSubmittingHelper,
     });
@@ -321,7 +321,7 @@ const useCoinmarketBuyForm = ({
                     setSelectedQuote(quote);
                     dispatch({
                         type: SET_MODAL_CRYPTO_CURRENCY,
-                        modalCryptoSymbol: quote.receiveCurrency,
+                        modalCryptoId: quote.receiveCurrency,
                     });
                     timer.stop();
                 }
@@ -400,13 +400,6 @@ const useCoinmarketBuyForm = ({
             previousValues.current = values;
         }
     }, [previousValues, values, handleChange, handleSubmit, offFirstRequest]);
-
-    useEffect(() => {
-        // when draft doesn't exist, we need to bind actual default values - that happens when we've got buyInfo from Invity API server
-        if (!isDraft && defaultValues) {
-            reset(defaultValues);
-        }
-    }, [reset, defaultValues, isDraft]);
 
     useEffect(() => {
         if (!isChanged(defaultValues, values)) {

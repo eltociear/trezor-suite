@@ -2,7 +2,7 @@ import { Translation } from 'src/components/suite';
 import { CoinmarketTextButton } from 'src/views/wallet/coinmarket';
 
 interface CoinmarketFormSwitcherCryptoFiatProps {
-    symbol: string;
+    symbol?: string;
     isDisabled: boolean;
     toggleAmountInCrypto: () => void;
 }
@@ -23,7 +23,7 @@ const CoinmarketFormSwitcherCryptoFiat = ({
         <Translation
             id="TR_COINMARKET_ENTER_AMOUNT_IN"
             values={{
-                currency: symbol,
+                currency: symbol?.toUpperCase(),
             }}
         />
     </CoinmarketTextButton>

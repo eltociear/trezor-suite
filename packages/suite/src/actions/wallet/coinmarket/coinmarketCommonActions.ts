@@ -1,30 +1,26 @@
-import { isDesktop } from '@trezor/env-utils';
 import { notificationsActions } from '@suite-common/toast-notifications';
-import { PROTO } from '@trezor/connect';
+import { confirmAddressOnDeviceThunk, selectDevice, toggleRememberDevice } from '@suite-common/wallet-core';
+import { AddressDisplayOptions } from '@suite-common/wallet-types';
+import { Output } from '@suite-common/wallet-types/src';
 import {
     amountToSatoshi,
     formatAmount,
     getAccountDecimals,
     hasNetworkFeatures,
-    parseFormDraftKey,
+    parseFormDraftKey
 } from '@suite-common/wallet-utils';
-import { Output } from '@suite-common/wallet-types/src';
-import {
-    confirmAddressOnDeviceThunk,
-    selectDevice,
-    toggleRememberDevice,
-} from '@suite-common/wallet-core';
-import { GetState, Dispatch } from 'src/types/suite';
+import { PROTO } from '@trezor/connect';
+import { isDesktop } from '@trezor/env-utils';
+import { CryptoId } from 'invity-api';
 import * as modalActions from 'src/actions/suite/modalActions';
-import { getUnusedAddressFromAccount } from 'src/utils/wallet/coinmarket/coinmarketUtils';
-import { Account } from 'src/types/wallet';
-import { ComposedTransactionInfo } from 'src/reducers/wallet/coinmarketReducer';
-import { submitRequestForm as envSubmitRequestForm } from 'src/utils/suite/env';
 import * as formDraftActions from 'src/actions/wallet/formDraftActions';
-import { COINMARKET_BUY, COINMARKET_EXCHANGE, COINMARKET_COMMON } from '../constants';
-import { AddressDisplayOptions } from '@suite-common/wallet-types';
 import { selectAddressDisplayType } from 'src/reducers/suite/suiteReducer';
-import { CryptoSymbol } from 'invity-api';
+import { ComposedTransactionInfo } from 'src/reducers/wallet/coinmarketReducer';
+import { Dispatch, GetState } from 'src/types/suite';
+import { Account } from 'src/types/wallet';
+import { submitRequestForm as envSubmitRequestForm } from 'src/utils/suite/env';
+import { getUnusedAddressFromAccount } from 'src/utils/wallet/coinmarket/coinmarketUtils';
+import { COINMARKET_BUY, COINMARKET_COMMON, COINMARKET_EXCHANGE } from '../constants';
 
 export type CoinmarketCommonAction =
     | {
@@ -41,7 +37,7 @@ export type CoinmarketCommonAction =
       }
     | {
           type: typeof COINMARKET_COMMON.SET_MODAL_CRYPTO_CURRENCY;
-          modalCryptoSymbol: CryptoSymbol | undefined;
+          modalCryptoId: CryptoId | undefined;
       };
 
 type FormState = {

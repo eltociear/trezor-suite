@@ -1,21 +1,17 @@
-import { useTranslation } from 'src/hooks/suite';
-import { NumberInput } from 'src/components/suite';
-import {
-    validateDecimals,
-    validateInteger,
-    validateLimits,
-    validateMin,
-} from 'src/utils/suite/validation';
-import { getInputState } from '@suite-common/wallet-utils';
-import { formInputsMaxLength } from '@suite-common/validators';
-import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
 import { useFormatters } from '@suite-common/formatters';
-import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
+import { formInputsMaxLength } from '@suite-common/validators';
+import { getInputState } from '@suite-common/wallet-utils';
 import { useEffect } from 'react';
-import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
-import { cryptoToCoinSymbol } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
-import { CoinmarketFormOptionLabel } from 'src/views/wallet/coinmarket';
+import { NumberInput } from 'src/components/suite';
 import { FORM_CRYPTO_INPUT, FORM_FIAT_INPUT } from 'src/constants/wallet/coinmarket/form';
+import { useTranslation } from 'src/hooks/suite';
+import { useCoinmarketFormContext } from 'src/hooks/wallet/coinmarket/form/useCoinmarketCommonForm';
+import { useCoinmarketCoins } from 'src/hooks/wallet/coinmarket/useCoinmarketCoins';
+import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
+import { CoinmarketFormInputProps } from 'src/types/coinmarket/coinmarketForm';
+import { validateDecimals, validateInteger, validateLimits, validateMin } from 'src/utils/suite/validation';
+import { coinmarketGetAccountLabel } from 'src/utils/wallet/coinmarket/coinmarketUtils';
+import { CoinmarketFormOptionLabel } from 'src/views/wallet/coinmarket';
 
 const CoinmarketFormInputCrypto = ({ className }: CoinmarketFormInputProps) => {
     const { translationString } = useTranslation();
@@ -31,8 +27,10 @@ const CoinmarketFormInputCrypto = ({ className }: CoinmarketFormInputProps) => {
         getValues,
     } = useCoinmarketFormContext();
     const { shouldSendInSats } = useBitcoinAmountUnit(account.symbol);
+    const { getNetworkSymbol } = useCoinmarketCoins();
     const { cryptoSelect } = getValues();
 
+    const accountSymbol = getNetworkSymbol(cryptoSelect.value)?.toUpperCase() ?? '';
     const cryptoInputRules = {
         validate: {
             min: validateMin(translationString),
@@ -67,7 +65,7 @@ const CoinmarketFormInputCrypto = ({ className }: CoinmarketFormInputProps) => {
             hasBottomPadding={false}
             innerAddon={
                 <CoinmarketFormOptionLabel>
-                    {cryptoToCoinSymbol(cryptoSelect?.value)}
+                    {coinmarketGetAccountLabel(accountSymbol, shouldSendInSats)}
                 </CoinmarketFormOptionLabel>
             }
             data-test="@coinmarket/form/crypto-input"

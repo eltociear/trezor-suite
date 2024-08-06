@@ -223,8 +223,8 @@ export const useCoinmarketSellForm = ({
     const { toggleAmountInCrypto } = useCoinmarketSatsSwitcher({
         account,
         methods,
-        cryptoInputAmount: quotesByPaymentMethod?.[0]?.cryptoStringAmount,
-        fiatInputAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
+        quoteCryptoAmount: quotesByPaymentMethod?.[0]?.cryptoStringAmount,
+        quoteFiatAmount: quotesByPaymentMethod?.[0]?.fiatStringAmount,
         network,
         setIsSubmittingHelper,
     });

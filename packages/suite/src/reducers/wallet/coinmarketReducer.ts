@@ -9,8 +9,8 @@ import type {
     ExchangeTrade,
     SellFiatTrade,
     SellFiatTradeQuoteRequest,
-    CryptoSymbolInfo,
-    CryptoSymbol,
+    Coins,
+    CryptoId,
 } from 'invity-api';
 import type { BuyInfo } from 'src/actions/wallet/coinmarketBuyActions';
 import type { ExchangeInfo } from 'src/actions/wallet/coinmarketExchangeActions';
@@ -41,7 +41,7 @@ export interface CoinmarketTradeCommonProps {
 }
 
 interface Info {
-    symbolsInfo?: CryptoSymbolInfo[];
+    coins?: Coins;
     paymentMethods: CoinmarketPaymentMethodListProps[];
 }
 
@@ -82,14 +82,14 @@ export interface State {
     sell: Sell;
     composedTransactionInfo: ComposedTransactionInfo;
     trades: Trade[];
-    modalCryptoSymbol: CryptoSymbol | undefined;
+    modalCryptoId: CryptoId | undefined;
     isLoading: boolean;
     lastLoadedTimestamp: number;
 }
 
 export const initialState: State = {
     info: {
-        symbolsInfo: [],
+        coins: undefined, // TODO: Does {} as default?
         paymentMethods: [],
     },
     buy: {
@@ -124,7 +124,7 @@ export const initialState: State = {
     composedTransactionInfo: {},
     trades: [],
     isLoading: false,
-    modalCryptoSymbol: undefined,
+    modalCryptoId: undefined,
     lastLoadedTimestamp: 0,
 };
 
@@ -137,8 +137,8 @@ const coinmarketReducer = (
             case STORAGE.LOAD:
                 draft.trades = action.payload.coinmarketTrades || draft.trades;
                 break;
-            case COINMARKET_INFO.SAVE_SYMBOLS_INFO:
-                draft.info.symbolsInfo = action.symbolsInfo;
+            case COINMARKET_INFO.SAVE_COINS:
+                draft.info.coins = action.coins;
                 break;
             case COINMARKET_INFO.SAVE_PAYMENT_METHODS:
                 draft.info.paymentMethods = action.paymentMethods;
@@ -230,7 +230,7 @@ const coinmarketReducer = (
                 draft.lastLoadedTimestamp = action.lastLoadedTimestamp;
                 break;
             case COINMARKET_COMMON.SET_MODAL_CRYPTO_CURRENCY:
-                draft.modalCryptoSymbol = action.modalCryptoSymbol;
+                draft.modalCryptoId = action.modalCryptoId;
                 break;
             // no default
         }

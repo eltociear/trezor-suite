@@ -23,10 +23,9 @@ import {
     SellFiatTradeQuoteResponse,
     SellFiatTradeRequest,
     SellFiatTradeResponse,
-    CryptoSymbolsResponse,
     SavingsPaymentMethod,
     SellCryptoPaymentMethod,
-    BuyCryptoPaymentMethod,
+    BuyCryptoPaymentMethod, Coins
 } from 'invity-api';
 import { getSuiteVersion, isDesktop } from '@trezor/env-utils';
 import type { InvityServerEnvironment, InvityServers } from '@suite-common/invity';
@@ -64,7 +63,7 @@ class InvityAPI {
     // info service
     private DETECT_COUNTRY_INFO = '/api/info/country';
     private GET_COUNTRY_INFO = '/api/info/country/{{country}}';
-    private SYMBOLS_INFO = '/api/info/symbols';
+    private COINS_INFO = '/api/v3/info/coins';
 
     // exchange service
     private EXCHANGE_LIST = '/api/v2/exchange/list';
@@ -73,11 +72,11 @@ class InvityAPI {
     private EXCHANGE_WATCH_TRADE = '/api/v2/exchange/watch/{{counter}}';
 
     // buy service
-    private BUY_LIST = '/api/v2/buy/list';
-    private BUY_QUOTES = '/api/v2/buy/quotes';
-    private BUY_DO_TRADE = '/api/v2/buy/trade';
-    private BUY_GET_TRADE_FORM = '/api/v2/buy/tradeform';
-    private BUY_WATCH_TRADE = '/api/v2/buy/watch/{{counter}}';
+    private BUY_LIST = '/api/v3/buy/list';
+    private BUY_QUOTES = '/api/v3/buy/quotes';
+    private BUY_DO_TRADE = '/api/v3/buy/trade';
+    private BUY_GET_TRADE_FORM = '/api/v3/buy/tradeform';
+    private BUY_WATCH_TRADE = '/api/v3/buy/watch/{{counter}}';
 
     // sell service
     private SELL_LIST = '/api/v2/sell/list';
@@ -193,19 +192,19 @@ class InvityAPI {
         return { country: this.unknownCountry };
     };
 
-    getSymbolsInfo = async (): Promise<CryptoSymbolsResponse> => {
+    getCoins = async (): Promise<Coins> => {
         try {
-            const response = await this.request(this.SYMBOLS_INFO, {}, 'GET');
+            const response = await this.request(this.COINS_INFO, {}, 'GET');
             if (!response || response.length === 0) {
-                return [];
+                return {};
             }
 
-            return response;
+            return response.coins;
         } catch (error) {
-            console.log('[getSymbolsInfo]', error);
+            console.log('[getCoinsInfo]', error);
         }
 
-        return [];
+        return {};
     };
 
     getExchangeList = async (): Promise<ExchangeListResponse | []> => {
@@ -268,7 +267,7 @@ class InvityAPI {
     getBuyQuotes = async (
         params: BuyTradeQuoteRequest,
         signal?: SignalType,
-    ): Promise<BuyTrade[] | undefined> => {
+    ): Promise<BuyTradeQuoteResponse | undefined> => {
         try {
             const response: BuyTradeQuoteResponse = await this.request(
                 this.BUY_QUOTES,

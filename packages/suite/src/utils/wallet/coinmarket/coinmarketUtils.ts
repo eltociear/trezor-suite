@@ -1,50 +1,35 @@
-import { Account, Network } from 'src/types/wallet';
-import { NETWORKS } from 'src/config/wallet';
+import { DefinitionType, isTokenDefinitionKnown, TokenDefinitions } from '@suite-common/token-definitions';
+import { getCoingeckoId, getNetworkFeatures } from '@suite-common/wallet-config';
+import { sortByCoin } from '@suite-common/wallet-utils';
 import TrezorConnect, { TokenInfo } from '@trezor/connect';
+import { BigNumber } from '@trezor/utils';
+import { BuyTrade, CryptoId, CryptoSymbol, SellFiatTrade } from 'invity-api';
+import { NETWORKS } from 'src/config/wallet';
 import regional from 'src/constants/wallet/coinmarket/regional';
-import { TrezorDevice } from 'src/types/suite';
-import { BuyTrade, CryptoSymbol, SellFiatTrade } from 'invity-api';
-import {
-    cryptoToCoinSymbol,
-    cryptoToNetworkSymbol,
-    getNetworkName,
-    isCryptoSymbolToken,
-    networkToCryptoSymbol,
-    tokenToCryptoSymbol,
-} from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
-import { getNetworkFeatures } from '@suite-common/wallet-config';
-import {
-    DefinitionType,
-    TokenDefinitions,
-    isTokenDefinitionKnown,
-} from '@suite-common/token-definitions';
 import {
     CoinmarketAccountOptionsGroupOptionProps,
     CoinmarketAccountsOptionsGroupProps,
     CoinmarketBuildAccountOptionsProps,
-    CoinmarketBuildOptionsProps,
     CoinmarketCryptoListProps,
     CoinmarketGetAmountLabelsProps,
     CoinmarketGetAmountLabelsReturnProps,
     CoinmarketGetSortedAccountsProps,
-    CoinmarketOptionsGroupProps,
     CoinmarketTradeBuySellDetailMapProps,
     CoinmarketTradeBuySellType,
     CoinmarketTradeDetailMapProps,
     CoinmarketTradeDetailType,
     CoinmarketTradeType,
-    CryptoCategoryType,
 } from 'src/types/coinmarket/coinmarket';
+import { TrezorDevice } from 'src/types/suite';
+import { Account, Network } from 'src/types/wallet';
+import {
+    cryptoToCoinSymbol,
+    cryptoToNetworkSymbol,
+    getNetworkName,
+    networkToCryptoSymbol, toTokenCryptoId,
+    tokenToCryptoSymbol
+} from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
 import { v4 as uuidv4 } from 'uuid';
-import { BigNumber } from '@trezor/utils';
-import CryptoCategories, {
-    CryptoCategoryA,
-    CryptoCategoryB,
-    CryptoCategoryC,
-    CryptoCategoryD,
-    CryptoCategoryE,
-} from 'src/constants/wallet/coinmarket/cryptoCategories';
-import { sortByCoin } from '@suite-common/wallet-utils';
 
 /** @deprecated */
 const suiteToInvitySymbols: {
@@ -57,11 +42,12 @@ export const buildFiatOption = (currency: string) => ({
     label: currency.toUpperCase(),
 });
 
-export const buildCryptoOption = (cryptoSymbol: CryptoSymbol): CoinmarketCryptoListProps => {
+// TODO: Delete me!!!
+export const buildCryptoOptionObsolete = (cryptoSymbol: CryptoSymbol): CoinmarketCryptoListProps => {
     const networkSymbol = cryptoToNetworkSymbol(cryptoSymbol);
 
     return {
-        value: cryptoSymbol,
+        value: cryptoSymbol as CryptoId,
         label: cryptoToCoinSymbol(cryptoSymbol),
         cryptoName: networkSymbol ? getNetworkName(networkSymbol) : null,
     };
@@ -333,65 +319,6 @@ export const getBestRatedQuote = (
     return bestRatedQuote;
 };
 
-export const coinmarketBuildCryptoOptions = ({
-    symbolsInfo,
-    cryptoCurrencies,
-}: CoinmarketBuildOptionsProps) => {
-    const groups: CoinmarketOptionsGroupProps[] = Object.keys(CryptoCategories).map(category => ({
-        label: category as CryptoCategoryType,
-        options: [],
-    }));
-
-    cryptoCurrencies.forEach(symbol => {
-        const coinSymbol = cryptoToCoinSymbol(symbol);
-        const symbolInfo = symbolsInfo?.find(symbolInfoItem => symbolInfoItem.symbol === symbol);
-        const cryptoSymbol = cryptoToNetworkSymbol(symbol);
-
-        const option = {
-            value: symbol,
-            label: coinSymbol.toUpperCase(),
-            cryptoName: symbolInfo?.name ?? null,
-        };
-
-        const pushOption = (category: CryptoCategoryType) => {
-            const group = groups.find(g => g.label === category);
-
-            group?.options.push(option);
-        };
-
-        // popular
-        if (symbolInfo?.category === CryptoCategoryA) {
-            pushOption(CryptoCategoryA);
-
-            return;
-        }
-
-        // tokens
-        if (isCryptoSymbolToken(symbol)) {
-            const networksWithCategoryName: CryptoCategoryType[] = [
-                CryptoCategoryB,
-                CryptoCategoryC,
-                CryptoCategoryD,
-            ];
-
-            networksWithCategoryName.forEach(network => {
-                if (CryptoCategories[network]?.network === cryptoSymbol) {
-                    pushOption(network);
-
-                    return;
-                }
-            });
-
-            return;
-        }
-
-        // default
-        pushOption(CryptoCategoryE);
-    });
-
-    return groups;
-};
-
 export const coinmarketGetSortedAccounts = ({
     accounts,
     deviceState,
@@ -402,7 +329,7 @@ export const coinmarketGetSortedAccounts = ({
 };
 
 export const coinmarketBuildAccountOptions = ({
-    symbolsInfo,
+    availableCoins,
     deviceState,
     accounts,
     accountLabels,
@@ -430,15 +357,12 @@ export const coinmarketBuildAccountOptions = ({
                 symbol: accountSymbol,
                 index,
             });
-        const foundSymbolInfo = symbolsInfo?.find(
-            item => item.symbol === networkToCryptoSymbol(accountSymbol),
-        );
 
         const options: CoinmarketAccountOptionsGroupOptionProps[] = [
             {
-                value: foundSymbolInfo?.symbol ?? (accountSymbol.toUpperCase() as CryptoSymbol),
+                value: getCoingeckoId(accountSymbol) as CryptoId,
                 label: accountSymbol.toUpperCase(),
-                cryptoName: foundSymbolInfo?.name ?? null,
+                cryptoName: getNetworkName(accountSymbol),
                 descriptor,
                 balance: formattedBalance ?? '',
             },
@@ -447,24 +371,21 @@ export const coinmarketBuildAccountOptions = ({
         // add crypto tokens to options
         if (tokens && tokens.length > 0) {
             tokens.forEach(token => {
-                const { symbol, balance, contract } = token;
+                const { symbol, balance, contract} = token;
                 if (!symbol || !balance || balance === '0') {
                     return;
                 }
 
-                const tokenCryptoSymbol = tokenToCryptoSymbol(symbol, account.symbol);
-                if (!tokenCryptoSymbol) {
+                const tokenCryptoId = toTokenCryptoId(accountSymbol, contract);
+                const tokenCoinInfo = availableCoins[tokenCryptoId];
+                if (!tokenCoinInfo) {
                     return;
                 }
 
-                const tokenSymbolInfo = symbolsInfo?.find(
-                    item => item.symbol === tokenCryptoSymbol,
-                );
-
                 options.push({
-                    value: tokenSymbolInfo?.symbol ?? (symbol as CryptoSymbol),
+                    value: tokenCoinInfo.symbol as CryptoId,
                     label: symbol.toUpperCase(),
-                    cryptoName: tokenSymbolInfo?.name ?? null,
+                    cryptoName: tokenCoinInfo.name,
                     contractAddress: contract,
                     descriptor,
                     balance: balance ?? '',
@@ -511,4 +432,4 @@ export const coinmarketGetRoundedFiatAmount = (amount: string): string =>
     new BigNumber(amount).toFixed(2, BigNumber.ROUND_HALF_UP);
 
 export const coinmarketGetAccountLabel = (label: string, shouldSendInSats: boolean | undefined) =>
-    label === 'BTC' && shouldSendInSats ? 'sats' : label;
+    label === 'BTC' && shouldSendInSats ? 'sat' : label;

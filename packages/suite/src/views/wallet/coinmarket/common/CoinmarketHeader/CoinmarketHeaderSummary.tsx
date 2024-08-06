@@ -1,16 +1,15 @@
 import { H2, Icon, variables } from '@trezor/components';
-import styled from 'styled-components';
-import { CoinmarketCryptoAmount, CoinmarketFiatAmount } from '..';
-import { cryptoToCoinSymbol } from 'src/utils/wallet/coinmarket/cryptoSymbolUtils';
-import { spacingsPx } from '@trezor/theme';
 import { SCREEN_QUERY } from '@trezor/components/src/config/variables';
-import { CoinmarketCryptoAmountProps } from 'src/types/coinmarket/coinmarketOffers';
+import { spacingsPx } from '@trezor/theme';
+import { CryptoId } from 'invity-api';
 import {
     isCoinmarketExchangeOffers,
     isCoinmarketSellOffers,
-    useCoinmarketOffersContext,
+    useCoinmarketOffersContext
 } from 'src/hooks/wallet/coinmarket/offers/useCoinmarketCommonOffers';
-import { CryptoSymbol } from 'invity-api';
+import { CoinmarketCryptoAmountProps } from 'src/types/coinmarket/coinmarketOffers';
+import styled from 'styled-components';
+import { CoinmarketCryptoAmount, CoinmarketFiatAmount } from '..';
 
 const SummaryWrap = styled.div`
     ${SCREEN_QUERY.BELOW_TABLET} {
@@ -52,8 +51,8 @@ const CoinmarketHeaderSummary = ({
                         {receiveCurrency && (
                             <TextWrap>
                                 <CoinmarketCryptoAmount
-                                    amount={receiveAmount ?? ''}
-                                    symbol={cryptoToCoinSymbol(receiveCurrency)}
+                                    amount={receiveAmount}
+                                    cryptoId={receiveCurrency}
                                     displayLogo
                                 />
                             </TextWrap>
@@ -70,8 +69,8 @@ const CoinmarketHeaderSummary = ({
                         {sendCurrency && (
                             <TextWrap>
                                 <CoinmarketCryptoAmount
-                                    amount={sendAmount ?? ''}
-                                    symbol={cryptoToCoinSymbol(sendCurrency as CryptoSymbol)}
+                                    amount={sendAmount}
+                                    cryptoId={sendCurrency as CryptoId}
                                     displayLogo
                                 />
                             </TextWrap>
@@ -80,8 +79,7 @@ const CoinmarketHeaderSummary = ({
                         {receiveCurrency && (
                             <TextWrap>
                                 <CoinmarketCryptoAmount
-                                    amount=""
-                                    symbol={cryptoToCoinSymbol(receiveCurrency)}
+                                    cryptoId={receiveCurrency}
                                     displayLogo
                                 />
                             </TextWrap>
