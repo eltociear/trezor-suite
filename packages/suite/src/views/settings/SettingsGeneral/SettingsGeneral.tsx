@@ -32,6 +32,7 @@ import { EnableViewOnly } from './EnableViewOnly';
 import { Experimental } from './Experimental';
 import { TorSnowflake } from './TorSnowflake';
 import { ExperimentalFeature } from 'src/constants/suite/experimental';
+import { TorExternal } from './TorExternal';
 
 export const SettingsGeneral = () => {
     const shouldShowSettingsDesktopAppPromoBanner = useSelector(
@@ -45,6 +46,9 @@ export const SettingsGeneral = () => {
     const { isMobileLayout } = useLayoutSize();
     const torSnowflakeExperimentalFeature = useSelector(
         selectHasExperimentalFeature(ExperimentalFeature.TorSnowflake),
+    );
+    const torExternalExperimentalFeature = useSelector(
+        selectHasExperimentalFeature(ExperimentalFeature.TorExternal),
     );
 
     const hasBitcoinNetworks = NETWORKS.some(
@@ -82,6 +86,7 @@ export const SettingsGeneral = () => {
                     {isDesktop() && <Tor />}
                     {isTorEnabled && <TorOnionLinks />}
                     {isDesktop() && torSnowflakeExperimentalFeature && <TorSnowflake />}
+                    {torExternalExperimentalFeature && <TorExternal />}
                 </SettingsSection>
             )}
 
