@@ -35,7 +35,7 @@ export const OpenGuideFromTooltip = ({ id, dataTest }: OpenGuideFromTooltipProps
 
     return (
         <OpenGuideLink
-            data-test={dataTest}
+            data-test-id={dataTest}
             onClick={(e: MouseEvent<any>) => {
                 e.stopPropagation();
                 openNodeById(id);

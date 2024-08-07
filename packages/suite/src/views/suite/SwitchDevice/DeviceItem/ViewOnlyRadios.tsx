@@ -69,7 +69,7 @@ export const ViewOnlyRadio = ({
                     {children}
                 </Text>
             </Left>
-            <Radio onClick={onClick} isChecked={isChecked} data-test={dataTest} />
+            <Radio onClick={onClick} isChecked={isChecked} data-test-id={dataTest} />
         </Item>
     );
 };

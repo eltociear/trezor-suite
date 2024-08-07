@@ -120,7 +120,7 @@ export const BitcoinOptions = () => {
                                     toggleOption('bitcoinLockTime');
                                     composeTransaction();
                                 }}
-                                data-test="add-locktime-button"
+                                data-test-id="add-locktime-button"
                             >
                                 <Translation id="LOCKTIME_ADD" />
                             </StyledButton>
@@ -145,7 +145,7 @@ export const BitcoinOptions = () => {
                                 toggleOption('broadcast');
                                 composeTransaction();
                             }}
-                            data-test="broadcast-button"
+                            data-test-id="broadcast-button"
                             isDisabled={isBroadcastDisabled}
                         >
                             <Inline>
@@ -168,7 +168,7 @@ export const BitcoinOptions = () => {
                                 size="small"
                                 icon="COIN_CONTROL"
                                 onClick={toggleUtxoSelection}
-                                data-test="coin-control-button"
+                                data-test-id="coin-control-button"
                             >
                                 <Inline>
                                     <Translation id="TR_COIN_CONTROL" />
@@ -184,7 +184,7 @@ export const BitcoinOptions = () => {
                         variant="tertiary"
                         size="small"
                         icon="PLUS"
-                        data-test="add-output"
+                        data-test-id="add-output"
                         onClick={addOutput}
                         isFullWidth
                     >

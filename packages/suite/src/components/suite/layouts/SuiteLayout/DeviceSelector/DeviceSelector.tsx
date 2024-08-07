@@ -108,7 +108,7 @@ export const DeviceSelector = () => {
                 <InnerContainer
                     onClick={handleSwitchDeviceClick}
                     tabIndex={0}
-                    data-test="@menu/switch-device"
+                    data-test-id="@menu/switch-device"
                 >
                     <SidebarDeviceStatus />
 

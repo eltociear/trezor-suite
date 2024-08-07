@@ -170,7 +170,7 @@ export const ReviewButton = () => {
             <ButtonReview
                 $isRed={anonymityWarningChecked}
                 tooltipContent={tooltipContent}
-                data-test="@send/review-button"
+                data-test-id="@send/review-button"
                 isDisabled={isDisabled || isLoading}
                 onClick={signTransaction}
             >

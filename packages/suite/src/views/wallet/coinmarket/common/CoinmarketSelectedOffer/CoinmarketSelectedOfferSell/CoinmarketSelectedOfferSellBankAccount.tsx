@@ -152,7 +152,7 @@ const CoinmarketSelectedOfferSellBankAccount = () => {
                         <RegisterAnother
                             variant="tertiary"
                             icon="PLUS"
-                            data-test="add-output"
+                            data-test-id="add-output"
                             onClick={addBankAccount}
                         >
                             <Translation id="TR_SELL_ADD_BANK_ACCOUNT" />

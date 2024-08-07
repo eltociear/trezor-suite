@@ -121,15 +121,15 @@ fixtures.forEach(f => {
         await page.goto(formatUrl(url, `methods/bitcoin/verifyMessage/${f.queryString}`));
         log('waiting for explorer to load');
         await waitAndClick(page, ['@api-playground/collapsible-box']);
-        await page.waitForSelector("button[data-test='@submit-button']", {
+        await page.waitForSelector("button[data-test-id='@submit-button']", {
             state: 'visible',
         });
 
         log('opening popup');
         [popup] = await Promise.all([
             context.waitForEvent('page'),
-            page.locator("button[data-test='@submit-button']").click({ timeout: 30000 }),
-            page.waitForSelector("[data-test='@submit-button/spinner']"),
+            page.locator("button[data-test-id='@submit-button']").click({ timeout: 30000 }),
+            page.waitForSelector("[data-test-id='@submit-button/spinner']"),
         ]);
         log('waiting for analytics');
         await waitAndClick(popup, ['@analytics/continue-button']);

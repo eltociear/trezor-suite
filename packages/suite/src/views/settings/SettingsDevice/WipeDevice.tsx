@@ -24,7 +24,7 @@ export const WipeDevice = ({ isDeviceLocked }: WipeDeviceProps) => {
                     onClick={handleClick}
                     variant="destructive"
                     isDisabled={isDeviceLocked}
-                    data-test="@settings/device/open-wipe-modal-button"
+                    data-test-id="@settings/device/open-wipe-modal-button"
                 >
                     <Translation id="TR_DEVICE_SETTINGS_BUTTON_WIPE_DEVICE" />
                 </ActionButton>

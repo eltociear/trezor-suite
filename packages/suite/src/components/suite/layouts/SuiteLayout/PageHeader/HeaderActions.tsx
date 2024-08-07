@@ -28,7 +28,7 @@ type ActionItem = {
     icon?: IconProps['icon'];
     callback: () => void;
     title: JSX.Element;
-    'data-test'?: string;
+    'data-test-id'?: string;
     isHidden?: boolean;
 };
 
@@ -82,7 +82,7 @@ export const HeaderActions = () => {
                     <Dropdown
                         alignMenu="bottom-right"
                         isDisabled={isAccountLoading}
-                        data-test="@wallet/menu/extra-dropdown"
+                        data-test-id="@wallet/menu/extra-dropdown"
                         items={[
                             {
                                 key: 'extra',
@@ -91,7 +91,7 @@ export const HeaderActions = () => {
                                         key: item.id,
                                         onClick: isAccountLoading ? undefined : item.callback,
                                         label: item.title,
-                                        'data-test': `@wallet/menu/${item.id}`,
+                                        'data-test-id': `@wallet/menu/${item.id}`,
                                     }),
                                 ),
                             },
@@ -107,7 +107,7 @@ export const HeaderActions = () => {
                         onClick={() => {
                             goToWithAnalytics('wallet-coinmarket-buy', { preserveParams: true });
                         }}
-                        data-test="@wallet/menu/wallet-coinmarket-buy"
+                        data-test-id="@wallet/menu/wallet-coinmarket-buy"
                         variant="tertiary"
                         size="small"
                         isDisabled={isAccountLoading}
@@ -125,7 +125,7 @@ export const HeaderActions = () => {
                         onClick={() => {
                             goToWithAnalytics('wallet-send', { preserveParams: true });
                         }}
-                        data-test="@wallet/menu/wallet-send"
+                        data-test-id="@wallet/menu/wallet-send"
                         variant={isDeviceConnected ? 'primary' : 'tertiary'}
                     >
                         <Translation id="TR_NAV_SEND" />
@@ -137,7 +137,7 @@ export const HeaderActions = () => {
                         onClick={() => {
                             goToWithAnalytics('wallet-receive', { preserveParams: true });
                         }}
-                        data-test="@wallet/menu/wallet-receive"
+                        data-test-id="@wallet/menu/wallet-receive"
                         variant={isDeviceConnected ? 'primary' : 'tertiary'}
                     >
                         <Translation id="TR_NAV_RECEIVE" />

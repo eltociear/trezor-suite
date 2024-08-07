@@ -110,22 +110,22 @@ export const ExportAction = ({ account, searchQuery, accountMetadata }: ExportAc
                         {
                             label: <Translation id="TR_EXPORT_AS" values={{ as: 'CSV' }} />,
                             onClick: () => runExport('csv'),
-                            'data-test': `${dataTest}/csv`,
+                            'data-test-id': `${dataTest}/csv`,
                         },
                         {
                             label: <Translation id="TR_EXPORT_AS" values={{ as: 'PDF' }} />,
                             onClick: () => runExport('pdf'),
-                            'data-test': `${dataTest}/pdf`,
+                            'data-test-id': `${dataTest}/pdf`,
                         },
                         {
                             label: <Translation id="TR_EXPORT_AS" values={{ as: 'JSON' }} />,
                             onClick: () => runExport('json'),
-                            'data-test': `${dataTest}/json`,
+                            'data-test-id': `${dataTest}/json`,
                         },
                     ],
                 },
             ]}
-            data-test={`${dataTest}/dropdown`}
+            data-test-id={`${dataTest}/dropdown`}
         />
     );
 };

@@ -269,7 +269,7 @@ export const Amount = ({ output, outputId }: AmountProps) => {
                         bottomText={bottomText || null}
                         onChange={handleInputChange}
                         name={amountName}
-                        data-test={amountName}
+                        data-test-id={amountName}
                         defaultValue={amountValue}
                         maxLength={formInputsMaxLength.amount}
                         rules={cryptoAmountRules}

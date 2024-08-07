@@ -93,7 +93,7 @@ export const Icon = ({
             src={icons[name]}
             beforeInjection={handleInjection}
             className={className}
-            data-test={dataTest}
+            data-test-id={dataTest}
         />
     );
 };

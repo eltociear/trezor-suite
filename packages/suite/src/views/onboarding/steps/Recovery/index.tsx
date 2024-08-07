@@ -76,7 +76,7 @@ export const RecoveryStep = () => {
                 }
                 innerActions={
                     <OnboardingButtonCta
-                        data-test="@onboarding/recovery/start-button"
+                        data-test-id="@onboarding/recovery/start-button"
                         onClick={recoverDevice}
                     >
                         <Translation id="TR_START_RECOVERY" />
@@ -166,7 +166,7 @@ export const RecoveryStep = () => {
                 heading={<Translation id="TR_WALLET_RECOVERED_FROM_SEED" />}
                 innerActions={
                     <OnboardingButtonCta
-                        data-test="@onboarding/recovery/continue-button"
+                        data-test-id="@onboarding/recovery/continue-button"
                         onClick={handleClick}
                     >
                         <Translation id="TR_CONTINUE" />
@@ -184,7 +184,7 @@ export const RecoveryStep = () => {
                 description={<Translation id="TR_RECOVERY_ERROR" values={{ error }} />}
                 innerActions={
                     <OnboardingButtonCta
-                        data-test="@onboarding/recovery/retry-button"
+                        data-test-id="@onboarding/recovery/retry-button"
                         onClick={
                             deviceModelInternal === DeviceModelInternal.T1B1
                                 ? resetReducer

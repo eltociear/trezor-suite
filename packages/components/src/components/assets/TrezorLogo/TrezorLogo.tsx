@@ -22,7 +22,7 @@ export interface TrezorLogoProps {
     type: TrezorLogoType;
     width?: string | number;
     height?: string | number;
-    'data-test'?: string;
+    'data-test-id'?: string;
 }
 
 const Loading = () => <span className="loading" />;

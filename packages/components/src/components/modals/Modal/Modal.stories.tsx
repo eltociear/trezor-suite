@@ -79,7 +79,7 @@ export const Modal: StoryObj<ModalProps> = {
         className: {
             control: 'none',
         },
-        'data-test': {
+        'data-test-id': {
             control: 'none',
         },
     },

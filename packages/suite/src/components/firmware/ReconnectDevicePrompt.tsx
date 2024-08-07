@@ -120,7 +120,7 @@ const ReconnectStep = ({ order, active, dataTest, children }: ReconnectStepProps
     <BulletPointWrapper>
         {order && <BulletPointNumber $active={active}>{order}</BulletPointNumber>}
 
-        <BulletPointText $active={active} data-test={active ? dataTest : undefined}>
+        <BulletPointText $active={active} data-test-id={active ? dataTest : undefined}>
             {children}
         </BulletPointText>
     </BulletPointWrapper>
@@ -251,7 +251,7 @@ export const ReconnectDevicePrompt = ({ onClose, onSuccess }: ReconnectDevicePro
         >
             {isAbortable && <StyledAbortButton onAbort={onClose} />}
 
-            <Wrapper data-test="@firmware/reconnect-device">
+            <Wrapper data-test-id="@firmware/reconnect-device">
                 {!isRebootDone && (
                     <RebootDeviceGraphics
                         device={uiEvent?.payload.device}
@@ -298,7 +298,7 @@ export const ReconnectDevicePrompt = ({ onClose, onSuccess }: ReconnectDevicePro
                         </>
                     ) : (
                         <>
-                            <Button onClick={onSuccess} data-test="@firmware/install-button">
+                            <Button onClick={onSuccess} data-test-id="@firmware/install-button">
                                 <Translation id="TR_INSTALL" />
                             </Button>
                         </>

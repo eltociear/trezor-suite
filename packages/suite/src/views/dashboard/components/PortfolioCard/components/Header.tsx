@@ -87,13 +87,13 @@ export const Header = ({
                     <Buttons>
                         <WalletEmptyButton
                             onClick={receiveClickHandler}
-                            data-test="@dashboard/receive-button"
+                            data-test-id="@dashboard/receive-button"
                         >
                             <Translation id="TR_RECEIVE" />
                         </WalletEmptyButton>
                         <WalletEmptyButton
                             onClick={buyClickHandler}
-                            data-test="@dashboard/buy-button"
+                            data-test-id="@dashboard/buy-button"
                             variant="tertiary"
                         >
                             <Translation id="TR_BUY" />

@@ -12,7 +12,7 @@ const Content = styled.div`
 export const ViewOnlyPromo = () => {
     return (
         <WelcomeLayout>
-            <Content data-test="@onboarding/view-only-promo">
+            <Content data-test-id="@onboarding/view-only-promo">
                 <ViewOnlyPromoContent />
             </Content>
         </WelcomeLayout>

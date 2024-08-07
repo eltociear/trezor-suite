@@ -191,7 +191,7 @@ const Input = ({
                     $rightAddonWidth={rightAddonWidth}
                     $isWithLabel={!!label}
                     placeholder={placeholder || ''} // needed for uncontrolled inputs
-                    data-test={dataTest}
+                    data-test-id={dataTest}
                     {...rest}
                 />
 

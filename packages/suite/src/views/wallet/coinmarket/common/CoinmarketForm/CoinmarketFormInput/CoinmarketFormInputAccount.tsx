@@ -94,7 +94,7 @@ const CoinmarketFormInputAccount = <
                                 </CoinmarketFormOption>
                             );
                         }}
-                        data-test="@coinmarket/form/account-select"
+                        data-test-id="@coinmarket/form/account-select"
                         isClearable={false}
                         isSearchable
                     />

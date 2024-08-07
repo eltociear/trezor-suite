@@ -343,7 +343,7 @@ export const FirmwareInitial = ({
                             goToNextStep();
                             updateAnalytics({ firmware: 'skip' });
                         }}
-                        data-test="@firmware/skip-button"
+                        data-test-id="@firmware/skip-button"
                     >
                         <Translation id="TR_SKIP_UPDATE" />
                     </OnboardingButtonSkip>

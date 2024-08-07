@@ -42,7 +42,7 @@ export const BridgeUnavailable = () => {
             <Modal
                 heading={<Translation id="TR_BRIDGE" />}
                 description={description}
-                data-test="@modal/bridge"
+                data-test-id="@modal/bridge"
             >
                 <Metadata title="Bridge | Trezor Suite" />
 
@@ -51,7 +51,7 @@ export const BridgeUnavailable = () => {
                         icon="ARROW_LEFT"
                         variant="tertiary"
                         onClick={goToWallet}
-                        data-test="@bridge/goto/wallet-index"
+                        data-test-id="@bridge/goto/wallet-index"
                     >
                         <Translation id="TR_TAKE_ME_BACK_TO_WALLET" />
                     </StyledButton>
@@ -68,7 +68,7 @@ export const BridgeUnavailable = () => {
         <Modal
             heading={<Translation id="TR_BRIDGE" />}
             description={<Translation id="TR_BRIDGE_NEEDED_DESCRIPTION" />}
-            data-test="@modal/bridge"
+            data-test-id="@modal/bridge"
         >
             <Metadata title="Bridge | Trezor Suite" />
 

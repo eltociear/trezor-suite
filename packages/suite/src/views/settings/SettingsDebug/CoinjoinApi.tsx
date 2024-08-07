@@ -63,7 +63,7 @@ const CoordinatorServer = ({
     const networkName = networks[symbol].name;
 
     return (
-        <SectionItem data-test={`@settings/debug/coinjoin/${symbol}`}>
+        <SectionItem data-test-id={`@settings/debug/coinjoin/${symbol}`}>
             <TextColumn
                 title={`${networkName}`}
                 description={
@@ -79,7 +79,7 @@ const CoordinatorServer = ({
                     onChange={({ value }) => onChange(symbol, value)}
                     value={selectedOption}
                     options={options}
-                    data-test={`@settings/debug/coinjoin/${symbol}/server-select`}
+                    data-test-id={`@settings/debug/coinjoin/${symbol}/server-select`}
                 />
             </ActionColumn>
         </SectionItem>

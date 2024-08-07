@@ -158,7 +158,7 @@ export const TokenSelect = ({ output, outputId }: TokenSelectProps) => {
         <Controller
             control={control}
             name={tokenInputName}
-            data-test={tokenInputName}
+            data-test-id={tokenInputName}
             defaultValue={tokenValue}
             render={({ field: { onChange } }) => (
                 <Select
@@ -194,7 +194,7 @@ export const TokenSelect = ({ output, outputId }: TokenSelectProps) => {
                         // compose (could be prevented because of Amount error from re-validation above)
                         composeTransaction(amountInputName);
                     }}
-                    data-test="@amount-select"
+                    data-test-id="@amount-select"
                 />
             )}
         />

@@ -101,7 +101,7 @@ export const SearchAction = ({
 
             <StyledInput
                 $isExpanded={isExpanded}
-                data-test={dataTest}
+                data-test-id={dataTest}
                 size="small"
                 innerRef={inputRef}
                 innerAddon={

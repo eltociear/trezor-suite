@@ -27,7 +27,7 @@ export const BackupRecoverySeed = ({ isDeviceLocked }: BackupRecoverySeedProps) 
             />
             <ActionColumn>
                 <ActionButton
-                    data-test="@settings/device/create-backup-button"
+                    data-test-id="@settings/device/create-backup-button"
                     onClick={handleClick}
                     isDisabled={isDeviceLocked || !needsBackup}
                 >

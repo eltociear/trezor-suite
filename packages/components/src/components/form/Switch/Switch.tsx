@@ -149,7 +149,7 @@ export const Switch = ({
                     e.preventDefault();
                     handleChange();
                 }}
-                data-test={dataTest}
+                data-test-id={dataTest}
                 $isSmall={isSmall}
             >
                 <Handle

@@ -145,7 +145,7 @@ export const Warning = ({
             $elevation={elevation}
             $filled={filled}
             $margin={margin}
-            data-test={dataTest}
+            data-test-id={dataTest}
         >
             {withIcon && (
                 <Icon

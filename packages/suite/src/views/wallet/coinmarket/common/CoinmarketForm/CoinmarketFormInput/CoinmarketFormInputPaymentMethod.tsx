@@ -56,7 +56,7 @@ const CoinmarketFormInputPaymentMethod = ({ label }: CoinmarketFormInputDefaultP
                                     </CoinmarketFormOptionLabel>
                                 </CoinmarketFormOption>
                             )}
-                            data-test="@coinmarket/form/payment-method-select"
+                            data-test-id="@coinmarket/form/payment-method-select"
                             isClearable={false}
                             isSearchable
                             isDisabled={isFormInvalid}

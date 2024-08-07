@@ -6,7 +6,7 @@ type PendingGroupHeaderProps = { txsCount: number };
 export const PendingGroupHeader = ({ txsCount }: PendingGroupHeaderProps) => {
     return (
         <HeaderWrapper>
-            <ColPending data-test="@transaction-group/pending/count">
+            <ColPending data-test-id="@transaction-group/pending/count">
                 <Translation id="TR_PENDING_TX_HEADING" values={{ count: txsCount }} /> • {txsCount}
             </ColPending>
         </HeaderWrapper>
