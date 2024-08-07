@@ -58,7 +58,7 @@ export class SessionsBackground extends TypedEmitter<{
         message: M,
     ): Promise<HandleMessageResponse<M>> {
         let result;
-
+        console.log('background handleMessage', message);
         try {
             // future:
             // once we decide that we want to have sessions synchronization also between browser tabs and
@@ -111,6 +111,7 @@ export class SessionsBackground extends TypedEmitter<{
                 id: message.type,
             } as HandleMessageResponse<M>;
         } finally {
+            console.log('background handleMessage done', result);
             if (result && result.success && result.payload && 'descriptors' in result.payload) {
                 const { descriptors } = result.payload;
                 setTimeout(() => this.emit('descriptors', Object.values(descriptors)), 0);
