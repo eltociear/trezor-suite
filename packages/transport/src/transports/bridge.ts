@@ -1,5 +1,10 @@
 import { versionUtils, createDeferred, Deferred, createTimeoutPromise } from '@trezor/utils';
-import { PROTOCOL_MALFORMED, bridge as bridgeProtocol } from '@trezor/protocol';
+import {
+    PROTOCOL_MALFORMED,
+    bridge as protocolBridge,
+    v1 as protocolV1,
+    TransportProtocol,
+} from '@trezor/protocol';
 import { bridgeApiCall } from '../utils/bridgeApiCall';
 import * as bridgeApiResult from '../utils/bridgeApiResult';
 import { buildMessage } from '../utils/send';
@@ -59,6 +64,7 @@ export class BridgeTransport extends AbstractTransport {
      * information about  the latest version of trezord.
      */
     private latestVersion?: string;
+    private useProtocolMessages: boolean = false;
     /**
      * url of trezord server.
      */
@@ -94,6 +100,7 @@ export class BridgeTransport extends AbstractTransport {
             if (this.latestVersion) {
                 this.isOutdated = versionUtils.isNewer(this.latestVersion, this.version);
             }
+            this.useProtocolMessages = versionUtils.isNewerOrEqual(this.version, '3.0.0'); // TODO
 
             this.stopped = false;
 
@@ -232,6 +239,29 @@ export class BridgeTransport extends AbstractTransport {
         return Promise.resolve(this.success(undefined));
     }
 
+    private getRequestBody(body: Buffer, protocol: TransportProtocol) {
+        if (this.useProtocolMessages) {
+            return JSON.stringify({
+                protocol: protocol.name,
+                message: body.toString('hex'),
+            });
+        } else if (protocol.name !== 'bridge') {
+            // TODO: success: false?
+            throw new Error('compatible setup');
+        }
+
+        return body.toString('hex');
+    }
+
+    private getResponseBody(response: string | Record<string, any>, _protocol: TransportProtocol) {
+        // TODO: this.useProtocolMessages &&
+        if (typeof response !== 'string') {
+            return response.message as string;
+        }
+
+        return response;
+    }
+
     // https://github.dev/trezor/trezord-go/blob/f559ee5079679aeb5f897c65318d3310f78223ca/core/core.go#L534
     public call({
         session,
@@ -241,7 +271,8 @@ export class BridgeTransport extends AbstractTransport {
     }: AbstractTransportMethodParams<'call'>) {
         return this.scheduleAction(
             async signal => {
-                const protocol = customProtocol || bridgeProtocol;
+                const protocol =
+                    customProtocol || (this.useProtocolMessages ? protocolV1 : protocolBridge);
                 const bytes = buildMessage({
                     messages: this.messages,
                     name,
@@ -250,15 +281,16 @@ export class BridgeTransport extends AbstractTransport {
                 });
                 const response = await this.post(`/call`, {
                     params: session,
-                    body: bytes.toString('hex'),
+                    body: this.getRequestBody(bytes, protocol),
                     signal,
                 });
                 if (!response.success) {
                     return response;
                 }
+                const payload = this.getResponseBody(response.payload, protocol);
                 const message = await receiveAndParse(
                     this.messages,
-                    () => Promise.resolve(Buffer.from(response.payload, 'hex')),
+                    () => Promise.resolve(Buffer.from(payload, 'hex')),
                     protocol,
                 );
 
@@ -268,18 +300,24 @@ export class BridgeTransport extends AbstractTransport {
         );
     }
 
-    public send({ session, name, data, protocol }: AbstractTransportMethodParams<'send'>) {
+    public send({
+        session,
+        name,
+        data,
+        protocol: customProtocol,
+    }: AbstractTransportMethodParams<'send'>) {
         return this.scheduleAction(async signal => {
-            const { encode } = protocol || bridgeProtocol;
+            const protocol =
+                customProtocol || (this.useProtocolMessages ? protocolV1 : protocolBridge);
             const bytes = buildMessage({
                 messages: this.messages,
                 name,
                 data,
-                encode,
+                encode: protocol.encode, // TODO: pass protocol
             });
             const response = await this.post('/post', {
                 params: session,
-                body: bytes.toString('hex'),
+                body: this.getRequestBody(bytes, protocol),
                 signal,
             });
             if (!response.success) {
@@ -295,18 +333,23 @@ export class BridgeTransport extends AbstractTransport {
         protocol: customProtocol,
     }: AbstractTransportMethodParams<'receive'>) {
         return this.scheduleAction(async signal => {
+            const protocol =
+                customProtocol || (this.useProtocolMessages ? protocolV1 : protocolBridge);
+            const body = this.getRequestBody(Buffer.alloc(0), protocol);
             const response = await this.post('/read', {
                 params: session,
+                body,
                 signal,
             });
 
             if (!response.success) {
                 return response;
             }
-            const protocol = customProtocol || bridgeProtocol;
+
+            const payload = this.getResponseBody(response.payload, protocol);
             const message = await receiveAndParse(
                 this.messages,
-                () => Promise.resolve(Buffer.from(response.payload, 'hex')),
+                () => Promise.resolve(Buffer.from(payload, 'hex')),
                 protocol,
             );
 
@@ -342,7 +385,7 @@ export class BridgeTransport extends AbstractTransport {
         endpoint: '/call',
         options: IncompleteRequestOptions,
     ): AsyncResultWithTypedError<
-        string,
+        string | Record<string, unknown>,
         | BridgeCommonErrors
         | typeof ERRORS.DEVICE_DISCONNECTED_DURING_ACTION
         | typeof PROTOCOL_MALFORMED
@@ -356,7 +399,7 @@ export class BridgeTransport extends AbstractTransport {
         endpoint: '/post',
         options: IncompleteRequestOptions,
     ): AsyncResultWithTypedError<
-        string,
+        string | Record<string, unknown>,
         | BridgeCommonErrors
         | typeof ERRORS.DEVICE_DISCONNECTED_DURING_ACTION
         | typeof PROTOCOL_MALFORMED
@@ -366,7 +409,7 @@ export class BridgeTransport extends AbstractTransport {
         endpoint: '/read',
         options: IncompleteRequestOptions,
     ): AsyncResultWithTypedError<
-        string,
+        string | Record<string, unknown>,
         | BridgeCommonErrors
         | typeof ERRORS.DEVICE_DISCONNECTED_DURING_ACTION
         | typeof PROTOCOL_MALFORMED

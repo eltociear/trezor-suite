@@ -79,7 +79,9 @@ export function acquire(res: UnknownPayload) {
 }
 
 export function call(res: UnknownPayload) {
-    if (!isString(res)) {
+    if (typeof res === 'object' && 'protocol' in res) {
+        return success(res);
+    } else if (!isString(res)) {
         return error({ error: ERRORS.WRONG_RESULT_TYPE });
     }
 
