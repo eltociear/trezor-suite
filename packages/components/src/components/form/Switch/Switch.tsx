@@ -117,7 +117,7 @@ export interface SwitchProps {
     isAlert?: boolean;
     isSmall?: boolean; // TODO: legacy prop
     className?: string;
-    dataTest?: string;
+    'data-test-id'?: string;
     labelPosition?: Extract<UIHorizontalAlignment, 'left' | 'right'>;
 }
 
@@ -127,7 +127,7 @@ export const Switch = ({
     isAlert,
     isSmall,
     label,
-    dataTest,
+    'data-test-id': dataTest,
     isChecked,
     className,
     labelPosition = 'right',

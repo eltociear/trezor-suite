@@ -132,7 +132,7 @@ export const Button = ({
     ) : null;
 
     const Loader = (
-        <Spinner size={getIconSize(size)} dataTest={`${rest['data-test-id']}/spinner`} />
+        <Spinner size={getIconSize(size)} data-test-id={`${rest['data-test-id']}/spinner`} />
     );
 
     return (

@@ -9,13 +9,13 @@ import { Dispatch } from 'react';
 type PassphraseWalletConfirmationStep1Props = {
     setContentType: Dispatch<React.SetStateAction<ContentType>>;
     onRetry: () => void;
-    dataTest?: string;
+    'data-test-id'?: string;
 };
 
 export const PassphraseWalletConfirmationStep1 = ({
     setContentType,
     onRetry,
-    dataTest,
+    'data-test-id': dataTest,
 }: PassphraseWalletConfirmationStep1Props) => (
     <>
         <PassphraseHeading>

@@ -53,7 +53,7 @@ export const FirmwareRevisionOptOutModal = ({ onCancel }: DeviceAuthenticityOptO
                     variant="destructive"
                     onClick={handleTurningOffRevisionCheck}
                     isDisabled={!isConfirmed}
-                    data-test="@device-authenticity/opt-out/button"
+                    data-test-id="@device-authenticity/opt-out/button"
                 >
                     <Translation id="TR_DEVICE_FIRMWARE_REVISION_CHECK_MODAL_BUTTON" />
                 </Button>
@@ -78,7 +78,7 @@ export const FirmwareRevisionOptOutModal = ({ onCancel }: DeviceAuthenticityOptO
                     }
                     isChecked={isConfirmed}
                     onClick={() => setIsConfirmed(!isConfirmed)}
-                    data-test="@device-authenticity/firmware-revision-checkbox"
+                    data-test-id="@device-authenticity/firmware-revision-checkbox"
                 />
             </CheckboxWrapper>
         </StyledModal>

@@ -322,10 +322,10 @@ export const Select = ({
     const memoizedComponents = useMemo(
         () => ({
             Control: (controlProps: ControlComponentProps) => (
-                <Control {...controlProps} dataTest={dataTest} />
+                <Control {...controlProps} data-test-id={dataTest} />
             ),
             Option: (optionProps: OptionComponentProps) => (
-                <Option {...optionProps} dataTest={dataTest} />
+                <Option {...optionProps} data-test-id={dataTest} />
             ),
             GroupHeading,
             ...components,

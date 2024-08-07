@@ -2,10 +2,10 @@ import { components, ControlProps, OptionProps, GroupHeadingProps } from 'react-
 import type { Option as OptionType } from './Select';
 
 export interface ControlComponentProps extends ControlProps<OptionType, boolean> {
-    dataTest?: string;
+    'data-test-id'?: string;
 }
 
-export const Control = ({ dataTest, ...controlProps }: ControlComponentProps) => (
+export const Control = ({ 'data-test-id': dataTest, ...controlProps }: ControlComponentProps) => (
     <components.Control
         {...controlProps}
         innerProps={
@@ -20,10 +20,10 @@ export const Control = ({ dataTest, ...controlProps }: ControlComponentProps) =>
 );
 
 export interface OptionComponentProps extends OptionProps<OptionType, boolean> {
-    dataTest?: string;
+    'data-test-id'?: string;
 }
 
-export const Option = ({ dataTest, ...optionProps }: OptionComponentProps) => (
+export const Option = ({ 'data-test-id': dataTest, ...optionProps }: OptionComponentProps) => (
     <components.Option
         {...optionProps}
         innerProps={

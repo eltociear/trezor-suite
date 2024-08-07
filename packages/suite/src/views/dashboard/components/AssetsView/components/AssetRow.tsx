@@ -199,7 +199,7 @@ export const AssetRow = memo(
                     {!isTestnet(symbol) && (
                         <CoinmarketBuyButton
                             symbol={symbol}
-                            dataTest={`@dashboard/assets/table/${symbol}/buy-button`}
+                            data-test-id={`@dashboard/assets/table/${symbol}/buy-button`}
                         />
                     )}
                     <StyledArrowIcon size={16} icon="ARROW_RIGHT_LONG" color={theme.iconSubdued} />

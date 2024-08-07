@@ -179,7 +179,7 @@ export const AssetCard = ({
                     </div>
                     <CoinmarketBuyButton
                         symbol={symbol}
-                        dataTest={`@dashboard/assets/grid/${symbol}/buy-button`}
+                        data-test-id={`@dashboard/assets/grid/${symbol}/buy-button`}
                     />
                 </BuyContainerCard>
             )}

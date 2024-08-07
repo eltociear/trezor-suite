@@ -88,7 +88,7 @@ export const getField = (field: Field<any> | FieldWithBundle<any>, props: Props)
         case 'number':
             return (
                 <Input
-                    dataTest={`@input/${field.name}`}
+                    data-test-id={`@input/${field.name}`}
                     key={field.name}
                     field={field}
                     onChange={props.actions.onFieldChange}

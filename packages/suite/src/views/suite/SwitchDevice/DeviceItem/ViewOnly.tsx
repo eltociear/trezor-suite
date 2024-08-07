@@ -13,7 +13,7 @@ import { AcquiredDevice } from '@suite-common/suite-types';
 type ViewOnlyProps = {
     setContentType: (contentType: ContentType) => void;
     instance: AcquiredDevice;
-    dataTest?: string;
+    'data-test-id'?: string;
 };
 
 const ViewOnlyContainer = styled.div`
@@ -73,7 +73,7 @@ export const ViewOnly = ({ setContentType, instance }: ViewOnlyProps) => {
                 <ViewOnlyRadios
                     isViewOnlyActive={isViewOnly}
                     toggleViewOnly={handleRememberChange}
-                    dataTest="@viewOnly/radios"
+                    data-test-id="@viewOnly/radios"
                     setContentType={setContentType}
                     device={instance}
                 />

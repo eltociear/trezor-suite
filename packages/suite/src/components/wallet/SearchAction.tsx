@@ -53,7 +53,7 @@ export interface SearchProps {
     setExpanded: Dispatch<SetStateAction<boolean>>;
     setSearch: Dispatch<SetStateAction<string>>;
     onSearch: (event: ChangeEvent<HTMLInputElement>) => void;
-    dataTest?: string;
+    'data-test-id'?: string;
 }
 
 export const SearchAction = ({
@@ -64,7 +64,7 @@ export const SearchAction = ({
     setExpanded,
     setSearch,
     onSearch,
-    dataTest,
+    'data-test-id': dataTest,
 }: SearchProps) => {
     const theme = useTheme();
     const inputRef = useRef<HTMLInputElement | null>(null);

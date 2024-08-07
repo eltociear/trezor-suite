@@ -70,7 +70,7 @@ export interface NavigationItemProps {
     goToRoute?: Route['name'];
     preserveParams?: boolean;
     isActive?: boolean;
-    dataTest?: string;
+    'data-test-id'?: string;
     className?: string;
     values?: ExtendedMessageDescriptor['values'];
     iconSize?: IconSize;
@@ -83,7 +83,7 @@ export const NavigationItem = ({
     routes,
     goToRoute,
     isActive,
-    dataTest,
+    'data-test-id': dataTest,
     className,
     values,
     preserveParams,

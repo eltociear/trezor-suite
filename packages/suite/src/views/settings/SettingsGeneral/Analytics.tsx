@@ -25,7 +25,7 @@ export const Analytics = () => {
             <ActionColumn>
                 <PositionedSwitch>
                     <Switch
-                        dataTest="@analytics/toggle-switch"
+                        data-test-id="@analytics/toggle-switch"
                         isChecked={!!userAllowedTracking}
                         onChange={() => {
                             if (userAllowedTracking) {

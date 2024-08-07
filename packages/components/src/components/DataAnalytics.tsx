@@ -171,7 +171,7 @@ export const DataAnalytics = ({
                         <Switch
                             isChecked={trackingEnabled}
                             onChange={() => setTrackingEnabled(!trackingEnabled)}
-                            dataTest="@analytics/toggle-switch"
+                            data-test-id="@analytics/toggle-switch"
                         />
                         <Label>
                             <FormattedMessage

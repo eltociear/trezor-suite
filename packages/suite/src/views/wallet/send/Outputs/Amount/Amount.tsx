@@ -234,7 +234,7 @@ export const Amount = ({ output, outputId }: AmountProps) => {
             hideOnLargeScreens={hideOnLargeScreens}
             hideOnSmallScreens={hideOnSmallScreens}
             isSetMaxActive={isSetMaxActive}
-            dataTest={!hideOnSmallScreens ? maxSwitchId : ''}
+            data-test-id={!hideOnSmallScreens ? maxSwitchId : ''}
             onChange={onSwitchChange}
         />
     );

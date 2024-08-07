@@ -38,10 +38,10 @@ export const All: StoryObj = {
             <StoryColumn minWidth={520}>
                 <Heading>Input</Heading>
                 <SubHeading>Default</SubHeading>
-                <Input value="Default input with select" dataTest="input-default" />
+                <Input value="Default input with select" data-test-id="input-default" />
                 <Input
                     value="Input with select"
-                    dataTest="input-select"
+                    data-test-id="input-select"
                     innerAddon={
                         <Select
                             isClean
@@ -55,42 +55,46 @@ export const All: StoryObj = {
                         />
                     }
                 />
-                <Input size="small" value="Small input" dataTest="input-default-small" />
-                <Input inputState="error" value="Input with error" dataTest="input-default-error" />
+                <Input size="small" value="Small input" data-test-id="input-default-small" />
+                <Input
+                    inputState="error"
+                    value="Input with error"
+                    data-test-id="input-default-error"
+                />
                 <Input
                     inputState="warning"
                     value="Input with warning"
-                    dataTest="input-default-warning"
+                    data-test-id="input-default-warning"
                 />
-                <Input isDisabled value="Disabled input" dataTest="input-default-disabled" />
+                <Input isDisabled value="Disabled input" data-test-id="input-default-disabled" />
                 <SubHeading>Monospace with button</SubHeading>
                 <Input
                     value="0x3Ebf31732F5A987b4f130Eb359B0975EBcbd68c8"
-                    dataTest="input-block-monospace-button"
+                    data-test-id="input-block-monospace-button"
                 />
                 <SubHeading>Partially hidden</SubHeading>
                 <Input
                     value="0x3Ebf31732F5A987b4f130Eb359B0975EBcbd68c8"
-                    dataTest="input-block-monospace-hidden"
+                    data-test-id="input-block-monospace-hidden"
                 />
                 <SubHeading>With label &amp; bottom text</SubHeading>
-                <Input value="Input label" dataTest="input-label" bottomText="bottom text" />
+                <Input value="Input label" data-test-id="input-label" bottomText="bottom text" />
                 <Input
                     size="small"
                     value="Small input label"
-                    dataTest="input-small-label"
+                    data-test-id="input-small-label"
                     bottomText="bottom text"
                 />
                 <Input
                     inputState="error"
                     value="Input label with error"
-                    dataTest="input-error-label"
+                    data-test-id="input-error-label"
                     bottomText="bottom text"
                 />
                 <Input
                     inputState="warning"
                     value="Input label with warning"
-                    dataTest="input-warning-label"
+                    data-test-id="input-warning-label"
                     bottomText="bottom text"
                     labelHoverRight={
                         <Button variant="tertiary" icon="QR" onClick={() => {}}>
@@ -101,7 +105,7 @@ export const All: StoryObj = {
                 <Input
                     isDisabled
                     value="Disabled input label"
-                    dataTest="input-disabled-label"
+                    data-test-id="input-disabled-label"
                     label={<Label>label</Label>}
                     bottomText="bottom text"
                 />
@@ -130,7 +134,7 @@ export const All: StoryObj = {
 
                 <SubHeading>Off</SubHeading>
                 <Switch
-                    dataTest="switch-off"
+                    data-test-id="switch-off"
                     onChange={() => {}}
                     isChecked={false}
                     label="Headline"
@@ -138,7 +142,7 @@ export const All: StoryObj = {
 
                 <SubHeading>Off disabled</SubHeading>
                 <Switch
-                    dataTest="switch-off-disabled"
+                    data-test-id="switch-off-disabled"
                     isDisabled
                     onChange={() => {}}
                     isChecked={false}
@@ -150,13 +154,13 @@ export const All: StoryObj = {
                     isChecked
                     onChange={() => {}}
                     isDisabled
-                    dataTest="switch-on"
+                    data-test-id="switch-on"
                     label="Headline"
                 />
 
                 <SubHeading>On disabled</SubHeading>
                 <Switch
-                    dataTest="switch-on-disabled"
+                    data-test-id="switch-on-disabled"
                     isDisabled
                     onChange={() => {}}
                     isChecked
@@ -168,7 +172,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked={false}
                     isSmall
-                    dataTest="switch-off-small"
+                    data-test-id="switch-off-small"
                     label="Headline"
                 />
 
@@ -178,7 +182,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked={false}
                     isSmall
-                    dataTest="switch-off-small-disabled"
+                    data-test-id="switch-off-small-disabled"
                     label="Headline"
                 />
 
@@ -187,7 +191,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked
                     isSmall
-                    dataTest="switch-on-small"
+                    data-test-id="switch-on-small"
                     label="Headline"
                 />
 
@@ -197,7 +201,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked
                     isSmall
-                    dataTest="switch-on-small-disabled"
+                    data-test-id="switch-on-small-disabled"
                     label="Headline"
                 />
 
@@ -206,7 +210,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked={false}
                     isAlert
-                    dataTest="switch-off-alert"
+                    data-test-id="switch-off-alert"
                     label="Headline"
                 />
 
@@ -216,7 +220,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked={false}
                     isAlert
-                    dataTest="switch-off-alert-disabled"
+                    data-test-id="switch-off-alert-disabled"
                     label="Headline"
                 />
 
@@ -225,7 +229,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked
                     isAlert
-                    dataTest="switch-on-alert"
+                    data-test-id="switch-on-alert"
                     label="Headline"
                 />
 
@@ -235,7 +239,7 @@ export const All: StoryObj = {
                     onChange={() => {}}
                     isChecked
                     isAlert
-                    dataTest="switch-on-alert-disabled"
+                    data-test-id="switch-on-alert-disabled"
                     label="Headline"
                 />
             </StoryColumn>

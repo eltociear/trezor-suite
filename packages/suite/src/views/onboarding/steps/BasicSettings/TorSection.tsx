@@ -47,7 +47,7 @@ export const TorSection = ({ torStatus }: TorSectionProps) => {
             </Label>
             <SwitchWrapper>
                 <Switch
-                    dataTest="@onboarding/tor-switch"
+                    data-test-id="@onboarding/tor-switch"
                     isChecked={isChecked}
                     isDisabled={isTorLoading}
                     onChange={handleChange}

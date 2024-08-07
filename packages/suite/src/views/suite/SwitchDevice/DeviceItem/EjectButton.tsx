@@ -16,10 +16,10 @@ const EjectContainer = styled.div<{ $elevation: Elevation }>`
 
 interface EjectButtonProps {
     setContentType: (contentType: ContentType) => void;
-    dataTest?: string;
+    'data-test-id'?: string;
 }
 
-export const EjectButton = ({ setContentType, dataTest }: EjectButtonProps) => {
+export const EjectButton = ({ setContentType, 'data-test-id': dataTest }: EjectButtonProps) => {
     const theme = useTheme();
 
     const onEjectClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

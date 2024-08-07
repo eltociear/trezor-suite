@@ -44,7 +44,7 @@ export const HapticFeedback = ({ isDeviceLocked }: DeviceLabelProps) => {
                     isChecked={hapticEnabled}
                     onChange={handleChange}
                     isDisabled={isDeviceLocked}
-                    dataTest="@settings/device/haptic-switch"
+                    data-test-id="@settings/device/haptic-switch"
                 />
             </ActionColumn>
         </SettingsSectionItem>

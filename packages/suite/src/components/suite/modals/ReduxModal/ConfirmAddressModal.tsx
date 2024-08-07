@@ -75,7 +75,7 @@ export const ConfirmAddressModal = ({ addressPath, value, ...props }: ConfirmAdd
             copyButtonText={<Translation id="TR_ADDRESS_MODAL_CLIPBOARD" />}
             validateOnDevice={validateAddress}
             value={value}
-            copyButtonDataTest="@metadata/copy-address-button"
+            data-test-id="@metadata/copy-address-button"
             displayMode={displayMode}
             {...props}
         />

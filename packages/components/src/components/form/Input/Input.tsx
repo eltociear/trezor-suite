@@ -93,7 +93,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
     isDisabled?: boolean;
     size?: InputSize;
     className?: string;
-    dataTest?: string;
+    'data-test-id'?: string;
     inputState?: InputState; // TODO: do we need this? we only have the error state right now
     innerAddonAlign?: innerAddonAlignment;
     hasBottomPadding?: boolean;
@@ -117,7 +117,7 @@ const Input = ({
     bottomText,
     size = 'large',
     isDisabled,
-    dataTest,
+    'data-test-id': dataTest,
     showClearButton,
     placeholder,
     onClear,

@@ -65,7 +65,7 @@ export const Labeling = () => {
                 >
                     <Switch
                         isDisabled={isDisabled || metadata.initiating}
-                        dataTest="@settings/metadata-switch"
+                        data-test-id="@settings/metadata-switch"
                         isChecked={metadata.enabled}
                         onChange={handleSwitchClick}
                     />

@@ -31,7 +31,7 @@ export type SpinnerProps = AllowedFrameProps & {
     hasFinished?: boolean;
     hasError?: boolean;
     className?: string;
-    dataTest?: string;
+    'data-test-id'?: string;
 };
 
 export const Spinner = ({
@@ -41,7 +41,7 @@ export const Spinner = ({
     hasFinished,
     hasError,
     className,
-    dataTest,
+    'data-test-id': dataTest,
     margin,
 }: SpinnerProps) => {
     const [hasStarted, setHasStarted] = useState(false);

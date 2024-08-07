@@ -113,10 +113,15 @@ interface ReconnectStepProps {
     order?: number;
     active: boolean;
     children: ReactNode;
-    dataTest: string;
+    'data-test-id'?: string;
 }
 
-const ReconnectStep = ({ order, active, dataTest, children }: ReconnectStepProps) => (
+const ReconnectStep = ({
+    order,
+    active,
+    'data-test-id': dataTest,
+    children,
+}: ReconnectStepProps) => (
     <BulletPointWrapper>
         {order && <BulletPointNumber $active={active}>{order}</BulletPointNumber>}
 
@@ -272,7 +277,7 @@ export const ReconnectDevicePrompt = ({ onClose, onSuccess }: ReconnectDevicePro
                                     <ReconnectStep
                                         order={1}
                                         active={rebootPhase !== 'disconnected'}
-                                        dataTest="@firmware/disconnect-message"
+                                        data-test-id="@firmware/disconnect-message"
                                     >
                                         <Translation id="TR_DISCONNECT_YOUR_DEVICE" />
                                     </ReconnectStep>
@@ -281,7 +286,7 @@ export const ReconnectDevicePrompt = ({ onClose, onSuccess }: ReconnectDevicePro
                                     <ReconnectStep
                                         order={2}
                                         active={rebootPhase === 'disconnected'}
-                                        dataTest="@firmware/connect-in-bootloader-message"
+                                        data-test-id="@firmware/connect-in-bootloader-message"
                                     >
                                         <Translation id={getSecondStep()} />
                                     </ReconnectStep>

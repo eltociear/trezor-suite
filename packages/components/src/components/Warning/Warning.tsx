@@ -31,7 +31,7 @@ export type WarningProps = AllowedFrameProps & {
     withIcon?: boolean;
     icon?: IconType;
     filled?: boolean;
-    dataTest?: string;
+    'data-test-id'?: string;
 };
 
 type MapArgs = {
@@ -132,7 +132,7 @@ export const Warning = ({
     icon,
     filled = true,
     margin,
-    dataTest,
+    'data-test-id': dataTest,
 }: WarningProps) => {
     const theme = useTheme();
     const { elevation } = useElevation();

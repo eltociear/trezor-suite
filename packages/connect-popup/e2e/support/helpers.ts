@@ -10,10 +10,10 @@ export const waitAndClick = async (page: Page, buttons: string[]) => {
 };
 
 // Helper to use data-test attributes to find elements.
-export const findElementByDataTest = async (page: Page, dataTest: string, timeout?: number) => {
-    await page.waitForSelector(`[data-test-id='${dataTest}']`, { state: 'visible', timeout });
+export const findElementByDataTest = async (page: Page, dataTestId: string, timeout?: number) => {
+    await page.waitForSelector(`[data-test-id='${dataTestId}']`, { state: 'visible', timeout });
 
-    return page.$(`[data-test-id='${dataTest}']`);
+    return page.$(`[data-test-id='${dataTestId}']`);
 };
 
 export const log = (...val: string[]) => {
