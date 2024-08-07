@@ -287,6 +287,252 @@ describe('http', () => {
             await trezordNode.stop();
         });
 
+        it('/call protocolMessage validation', async () => {
+            const trezordNode = createTrezordNode({ port: await getFreePort() });
+            await trezordNode.start();
+            const url = trezordNode.server?.getRouteAddress('/');
+
+            await bridgeApiCall({
+                url: `${url}enumerate`,
+                method: 'POST',
+            });
+            await bridgeApiCall({
+                url: `${url}acquire/1/null`,
+                method: 'POST',
+            });
+
+            let res;
+            // no protocol, legacy way
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: '000000000000',
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toBe('00110000000c1002180020006000aa010154');
+            // invalid legacy message (not a hex)
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: 'not a hex',
+            });
+            expect(res.success).toBe(false);
+
+            // protocol bridge, json response without magic header
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'bridge', message: '000000000000' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'bridge',
+                message: '00110000000c1002180020006000aa010154',
+            });
+
+            // protocol v1, json response with magic header
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v1', message: '3f2323000000000000' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'v1',
+                message: '3f232300110000000c1002180020006000aa010154',
+            });
+
+            // invalid protocol message (v0)
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v0', message: '00' }),
+            });
+            expect(res.success).toBe(false);
+
+            // invalid protocol message (not a hex)
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v1', message: 'not a hex' }),
+            });
+            expect(res.success).toBe(false);
+
+            // invalid protocol message (malformed json)
+            res = await bridgeApiCall({
+                url: `${url}call/1`,
+                method: 'POST',
+                body: { foo: 'bar' },
+            });
+            expect(res.success).toBe(false);
+
+            await trezordNode.stop();
+        });
+
+        it('/post protocolMessage validation', async () => {
+            const trezordNode = createTrezordNode({ port: await getFreePort() });
+            await trezordNode.start();
+            const url = trezordNode.server?.getRouteAddress('/');
+
+            await bridgeApiCall({
+                url: `${url}enumerate`,
+                method: 'POST',
+            });
+            await bridgeApiCall({
+                url: `${url}acquire/1/null`,
+                method: 'POST',
+            });
+
+            let res;
+            // no protocol, legacy way
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: '000000000000',
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toBe('');
+            // invalid legacy message (not a hex)
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: 'not a hex',
+            });
+            expect(res.success).toBe(false);
+
+            // protocol bridge, json response without magic header
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'bridge', message: '000000000000' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'bridge',
+            });
+
+            // protocol v1, json response with magic header
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v1', message: '3f2323000000000000' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'v1',
+            });
+
+            // invalid protocol message (v0)
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v0', message: '00' }),
+            });
+            expect(res.success).toBe(false);
+
+            // invalid protocol message (not a hex)
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v1', message: 'not a hex' }),
+            });
+            expect(res.success).toBe(false);
+
+            // invalid protocol message (malformed json)
+            res = await bridgeApiCall({
+                url: `${url}post/1`,
+                method: 'POST',
+                body: { foo: 'bar' },
+            });
+            expect(res.success).toBe(false);
+
+            await trezordNode.stop();
+        });
+
+        it('/read protocolMessage validation', async () => {
+            const trezordNode = createTrezordNode({ port: await getFreePort() });
+            await trezordNode.start();
+            const url = trezordNode.server?.getRouteAddress('/');
+
+            await bridgeApiCall({
+                url: `${url}enumerate`,
+                method: 'POST',
+            });
+            await bridgeApiCall({
+                url: `${url}acquire/1/null`,
+                method: 'POST',
+            });
+
+            let res;
+            // no protocol, legacy way
+            res = await bridgeApiCall({
+                url: `${url}read/1`,
+                method: 'POST',
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toBe('00110000000c1002180020006000aa010154');
+
+            // protocol bridge, json response without magic header
+            res = await bridgeApiCall({
+                url: `${url}read/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'bridge' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'bridge',
+                message: '00110000000c1002180020006000aa010154',
+            });
+
+            // protocol v1, json response with magic header
+            res = await bridgeApiCall({
+                url: `${url}read/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v1' }),
+            });
+            if (!res.success) {
+                throw new Error(res.error);
+            }
+            expect(res.payload).toEqual({
+                protocol: 'v1',
+                message: '3f232300110000000c1002180020006000aa010154',
+            });
+
+            // invalid protocol message (v0)
+            res = await bridgeApiCall({
+                url: `${url}read/1`,
+                method: 'POST',
+                body: JSON.stringify({ protocol: 'v0' }),
+            });
+            expect(res.success).toBe(false);
+
+            // invalid protocol message (malformed json)
+            res = await bridgeApiCall({
+                url: `${url}read/1`,
+                method: 'POST',
+                body: { foo: 'bar' },
+            });
+            expect(res.success).toBe(false);
+
+            await trezordNode.stop();
+        });
+
         describe('listen', () => {
             // client mimicking BridgeTransport class
             class Client extends EventEmitter {

@@ -12,7 +12,8 @@ import {
     RequestWithParams,
     Response,
 } from '@trezor/node-utils';
-import { Descriptor, Session } from '@trezor/transport/src/types';
+import { TransportProtocol } from '@trezor/protocol';
+import { Descriptor, Session } from '@trezor/transport';
 import { Log, arrayPartition, Throttler } from '@trezor/utils';
 import { AbstractApi } from '@trezor/transport/src/api/abstract';
 
@@ -59,6 +60,42 @@ const validateSessionParams: ParamsValidatorHandler<{
         response.end(JSON.stringify({ error: 'Invalid params' }));
     }
 };
+
+const validateBodyProtocol =
+    (
+        withMessage: boolean,
+    ): RequestHandler<string, { protocol?: TransportProtocol['name']; message: string }> =>
+    (request, response, next) => {
+        const isHex = (s: string) => /^[0-9A-Fa-f]+$/g.test(s); // TODO: trezor/utils accepts 0x prefix (eth)
+
+        // Legacy bridge < 3.1.0 // TODO version?
+        if (!request.body || isHex(request.body)) {
+            const body = {
+                message: request.body,
+            } as const;
+
+            return next({ ...request, body }, response);
+        }
+
+        try {
+            const json = JSON.parse(request.body);
+            if (withMessage && (typeof json.message !== 'string' || !isHex(json.message))) {
+                throw new Error('Invalid protocol');
+            }
+            if (typeof json.protocol !== 'string' || !/^bridge$|^v1$/.test(json.protocol)) {
+                throw new Error('Invalid protocol message');
+            }
+            const body = {
+                protocol: json.protocol,
+                message: json.message,
+            } as const;
+
+            return next({ ...request, body }, response);
+        } catch (error) {
+            response.statusCode = 400;
+            response.end(JSON.stringify({ error: error.message }));
+        }
+    };
 
 export class TrezordNode {
     /** versioning, baked in by webpack */
@@ -274,12 +311,15 @@ export class TrezordNode {
             app.post('/call/:session', [
                 validateSessionParams,
                 parseBodyText,
+                validateBodyProtocol(true),
                 (req, res) => {
                     const signal = this.createAbortSignal(res);
+                    const { protocol, message } = req.body;
                     this.core
                         .call({
                             session: req.params.session,
-                            data: req.body,
+                            protocol: protocol || 'bridge',
+                            data: message,
                             signal,
                         })
                         .then(result => {
@@ -288,38 +328,28 @@ export class TrezordNode {
 
                                 return res.end(str({ error: result.error }));
                             }
-                            res.end(result.payload);
+                            if (protocol) {
+                                res.end(str({ protocol, message: result.payload }));
+                            } else {
+                                res.end(result.payload);
+                            }
                         });
                 },
             ]);
 
             app.post('/read/:session', [
                 validateSessionParams,
-                parseBodyJSON,
-                (req, res) => {
-                    const signal = this.createAbortSignal(res);
-                    this.core.receive({ session: req.params.session, signal }).then(result => {
-                        if (!result.success) {
-                            res.statusCode = 400;
-
-                            return res.end(str({ error: result.error }));
-                        }
-
-                        res.end(result.payload);
-                    });
-                },
-            ]);
-
-            app.post('/post/:session', [
-                validateSessionParams,
+                // parseBodyJSON, // TODO why it was like that?
                 parseBodyText,
+                validateBodyProtocol(false),
                 (req, res) => {
                     const signal = this.createAbortSignal(res);
+                    const { protocol } = req.body;
                     this.core
-                        .send({
+                        .receive({
                             session: req.params.session,
-                            data: req.body,
                             signal,
+                            protocol: protocol || 'bridge',
                         })
                         .then(result => {
                             if (!result.success) {
@@ -327,7 +357,41 @@ export class TrezordNode {
 
                                 return res.end(str({ error: result.error }));
                             }
-                            res.end();
+
+                            if (protocol) {
+                                res.end(str({ protocol, message: result.payload }));
+                            } else {
+                                res.end(result.payload);
+                            }
+                        });
+                },
+            ]);
+
+            app.post('/post/:session', [
+                validateSessionParams,
+                parseBodyText,
+                validateBodyProtocol(true),
+                (req, res) => {
+                    const signal = this.createAbortSignal(res);
+                    const { protocol, message } = req.body;
+                    this.core
+                        .send({
+                            session: req.params.session,
+                            data: message,
+                            signal,
+                            protocol: protocol || 'bridge',
+                        })
+                        .then(result => {
+                            if (!result.success) {
+                                res.statusCode = 400;
+
+                                return res.end(str({ error: result.error }));
+                            }
+                            if (protocol) {
+                                res.end(str({ protocol }));
+                            } else {
+                                res.end();
+                            }
                         });
                 },
             ]);
