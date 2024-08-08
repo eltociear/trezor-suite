@@ -156,6 +156,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
 
         if (transport.name === 'BridgeTransport') {
             this.protocol = bridgeProtocol;
+            // this.protocol = v1Protocol;
         } else {
             this.protocol = v1Protocol;
         }
