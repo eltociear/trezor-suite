@@ -53,7 +53,13 @@ export const BottomText = ({
 
     return (
         <Container $inputState={inputState} $isDisabled={isDisabled}>
-            {icon && <Icon name={icon} size="medium" color={iconColor} />}
+            {icon && (
+                <Icon
+                    name={inputState === 'primary' ? 'check' : icon}
+                    size="medium"
+                    color={iconColor}
+                />
+            )}
 
             {children}
         </Container>
